@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/process/{student}', [\App\Http\Controllers\PaymentController::class, 'process'])->name('payments.process');
     Route::post('/payments/process/{student}', [\App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/payments/{payment}/invoice', [\App\Http\Controllers\PaymentController::class, 'printInvoicePdf'])->name('payments.invoice.pdf');
     Route::delete('/payments/{payment}', [\App\Http\Controllers\PaymentController::class, 'destroy'])->name('payments.destroy');
 
     Route::get('/updates', [\App\Http\Controllers\UpdateController::class, 'index'])->name('updates');
@@ -50,4 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/reports/classrooms', [\App\Http\Controllers\ReportController::class, 'classrooms'])->name('reports.classrooms');
     Route::get('/reports/classrooms/{id}', [\App\Http\Controllers\ReportController::class, 'classroomDetail'])->name('reports.classroom.detail');
+    Route::get('/reports/classrooms/{id}/pdf', [\App\Http\Controllers\ReportController::class, 'printClassroomPdf'])->name('reports.classroom.pdf');
+    Route::get('/reports/students/{id}/pdf', [\App\Http\Controllers\ReportController::class, 'printStudentPdf'])->name('reports.student.pdf');
+    Route::get('/reports/bku/pdf', [\App\Http\Controllers\ReportController::class, 'printBkuPdf'])->name('reports.bku.pdf');
 });

@@ -48,10 +48,16 @@ const getProgressTextClass = (percentage) => {
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     <span class="text-gray-400 font-normal">Statistik /</span> Kelas {{ classroom.level }} {{ classroom.name }}
                 </h2>
-                <Link :href="route('reports.classrooms')" class="text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali
-                </Link>
+                <div class="flex items-center gap-3">
+                    <a :href="route('reports.classroom.pdf', classroom.id)" target="_blank" class="text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Cetak PDF Kelas
+                    </a>
+                    <Link :href="route('reports.classrooms')" class="text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Kembali
+                    </Link>
+                </div>
             </div>
         </template>
 
@@ -127,6 +133,7 @@ const getProgressTextClass = (percentage) => {
                                     <th scope="col" class="px-6 py-4 font-bold w-1/3">Nama Siswa</th>
                                     <th scope="col" class="px-6 py-4 font-bold text-center">Status Tagihan</th>
                                     <th scope="col" class="px-6 py-4 font-bold">Progress Kelunasan</th>
+                                    <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
                                     <th scope="col" class="px-6 py-4 font-bold text-center">Detail</th>
                                 </tr>
                             </thead>
@@ -159,7 +166,12 @@ const getProgressTextClass = (percentage) => {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <button class="text-gray-400 hover:text-indigo-600 transition-colors">
+                                            <a :href="route('reports.student.pdf', student.id)" @click.stop target="_blank" class="inline-flex text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Cetak PDF Siswa">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="text-gray-400 hover:text-indigo-600 transition-colors p-2">
                                                 <svg class="w-5 h-5 transform transition-transform" :class="{'rotate-180': expandedStudent === student.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                             </button>
                                         </td>

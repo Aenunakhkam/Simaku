@@ -68,7 +68,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'billings' => 'required|array',
             'billings.*.id' => 'required|exists:billings,id',
-            'billings.*.pay_amount' => 'required|numeric|min:1',
+            'billings.*.pay_amount' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -153,5 +153,15 @@ class PaymentController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal membatalkan transaksi: ' . $e->getMessage());
         }
+    }
+
+    public function printInvoicePdf(Payment $payment)
+    {
+        $payment->load(['student.classroom.major', 'paymentDetails.billing.category', 'paymentDetails.billing.academicYear', 'user']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('payment'))
+            ->setPaper('a5', 'landscape');
+
+        return $pdf->stream('Kuitansi_' . $payment->invoice_number . '.pdf');
     }
 }

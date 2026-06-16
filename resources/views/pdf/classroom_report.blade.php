@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Keuangan Kelas {{ $classroom->level }} {{ $classroom->name }}</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12px; margin: 20px; color: #000; }
+        .kop-surat { width: 100%; border-bottom: 4px double #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .kop-surat td { border: none; padding: 0; }
+        .kop-surat .logo { width: 80px; text-align: left; }
+        .kop-surat .teks { text-align: center; }
+        .kop-surat h1 { margin: 0; font-size: 22px; text-transform: uppercase; font-weight: bold; }
+        .kop-surat h2 { margin: 5px 0 0 0; font-size: 18px; text-transform: uppercase; font-weight: bold; }
+        .kop-surat p { margin: 3px 0 0 0; font-size: 12px; }
+        
+        .title { text-align: center; margin-bottom: 20px; }
+        .title h3 { margin: 0; font-size: 14px; text-transform: uppercase; text-decoration: underline; }
+        
+        .info { margin-bottom: 15px; width: 100%; font-size: 12px; }
+        .info td { padding: 3px; font-weight: bold; border: none; }
+        .info td.value { font-weight: normal; }
+        
+        table.data { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #000; }
+        table.data th, table.data td { border: 1px solid #000; padding: 8px 6px; text-align: left; }
+        table.data th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; font-size: 11px; text-align: center; }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        
+        .footer { margin-top: 50px; width: 100%; border: none; }
+        .footer td { border: none; text-align: center; vertical-align: top; width: 50%; }
+        .signature-box { margin-top: 80px; font-weight: bold; }
+        
+        .page-break { page-break-after: always; }
+        .page-number:before { content: counter(page); }
+    </style>
+</head>
+<body>
+
+    <table class="kop-surat">
+        <tr>
+            <td class="logo">
+                <img src="{{ public_path('favicon.png') }}" style="width: 80px;">
+            </td>
+            <td class="teks">
+                <h1>YAYASAN PENDIDIKAN SIMAKU</h1>
+                <h2>SMK / SMA SIMAKU</h2>
+                <p>Jl. Pendidikan No. 123, Telp. (021) 1234567, Email: info@simaku.sch.id</p>
+                <p>Website: www.simaku.sch.id</p>
+            </td>
+        </tr>
+    </table>
+
+    <div class="title">
+        <h3>REKAPITULASI PEMBAYARAN TAGIHAN SISWA</h3>
+    </div>
+
+    @php
+        $academicYear = \App\Models\AcademicYear::find(session('academic_year_id'));
+        $academicYearName = $academicYear ? $academicYear->name : 'Tahun Ajaran Berjalan';
+    @endphp
+
+    <table class="info">
+        <tr>
+            <td width="15%">Kelas</td>
+            <td width="35%" class="value">: {{ $classroom->level }} {{ $classroom->name }}</td>
+            <td width="15%">Program Keahlian</td>
+            <td width="35%" class="value">: {{ $classroom->major ? $classroom->major->name : 'Umum' }}</td>
+        </tr>
+        <tr>
+            <td>Tahun Ajaran</td>
+            <td class="value">: {{ $academicYearName }}</td>
+            <td>Tanggal Cetak</td>
+            <td class="value">: {{ date('d F Y') }}</td>
+        </tr>
+    </table>
+
+    <table class="data">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="15%">NIS/NISN</th>
+                <th width="30%">Nama Siswa</th>
+                <th width="15%">Total Tagihan</th>
+                <th width="15%">Total Terbayar</th>
+                <th width="10%">Sisa Tagihan</th>
+                <th width="10%">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $no = 1; $grandTotal = 0; $grandPaid = 0; $grandSisa = 0; @endphp
+            @forelse($students as $student)
+                @php
+                    $grandTotal += $student->total_billings;
+                    $grandPaid += $student->paid_billings;
+                    $sisa = $student->total_billings - $student->paid_billings;
+                    $grandSisa += $sisa;
+                    $percentage = $student->total_billings > 0 ? round(($student->paid_billings / $student->total_billings) * 100, 1) : 0;
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>{{ $student->nis }}<br>{{ $student->nisn }}</td>
+                    <td>{{ $student->name }}</td>
+                    <td class="text-right">Rp {{ number_format($student->total_billings, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($student->paid_billings, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($sisa, 0, ',', '.') }}</td>
+                    <td class="text-center">
+                        @if($percentage >= 100)
+                            LUNAS
+                        @else
+                            BELUM
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center">Tidak ada data siswa untuk kelas ini.</td>
+                </tr>
+            @endforelse
+        </tbody>
+        <tfoot>
+            <tr style="background-color: #f2f2f2; font-weight: bold;">
+                <td colspan="3" class="text-right">TOTAL KESELURUHAN</td>
+                <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($grandPaid, 0, ',', '.') }}</td>
+                <td class="text-right">Rp {{ number_format($grandSisa, 0, ',', '.') }}</td>
+                <td class="text-center"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <table class="footer">
+        <tr>
+            <td>
+                <br>
+                Mengetahui,<br>
+                Kepala Sekolah
+                <div class="signature-box">
+                    __________________________<br>
+                    NIP. 
+                </div>
+            </td>
+            <td>
+                ................., {{ date('d F Y') }}<br>
+                Bendahara / Bag. Keuangan
+                <div class="signature-box">
+                    <strong>{{ auth()->user()->name }}</strong><br>
+                    __________________________
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 40px; font-size: 10px; color: #555; font-style: italic; border-top: 1px dashed #ccc; padding-top: 5px;">
+        * Dokumen Laporan Keuangan ini dicetak secara otomatis oleh Sistem Manajemen Keuangan (SIMAKU) pada {{ date('d/m/Y H:i:s') }}.
+    </div>
+
+</body>
+</html>

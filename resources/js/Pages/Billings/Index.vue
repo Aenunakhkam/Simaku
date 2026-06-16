@@ -25,10 +25,9 @@ const isCreateModalOpen = ref(false);
 const form = useForm({
     target_type: 'classroom',
     target_id: '',
-    payment_category_id: '',
+    payment_category_ids: [],
     academic_year_id: page.props.active_academic_year ? page.props.active_academic_year.id : '',
     month: '',
-    amount: '',
 });
 
 const formatRupiah = (number) => {
@@ -41,12 +40,6 @@ const getMonthName = (month) => {
     return months[month - 1];
 };
 
-const onCategoryChange = () => {
-    const selected = props.categories.find(c => c.id === form.payment_category_id);
-    if (selected) {
-        form.amount = selected.default_amount;
-    }
-};
 
 const openCreateModal = () => {
     form.reset();
@@ -237,14 +230,20 @@ const onSearch = () => {
                     </div>
 
                     <div class="mb-4">
-                        <InputLabel value="Kategori Tagihan" />
-                        <select v-model="form.payment_category_id" @change="onCategoryChange" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                            <option value="">-- Pilih Kategori --</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                                {{ cat.name }} ({{ cat.type === 'monthly' ? 'Bulanan' : 'Sekali Bayar' }})
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.payment_category_id" class="mt-2" />
+                        <InputLabel value="Kategori Tagihan (Bisa Pilih Banyak)" />
+                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-gray-200 rounded-md bg-gray-50">
+                            <label v-for="cat in categories" :key="cat.id" class="flex items-start space-x-3 bg-white p-2 border border-gray-100 rounded shadow-sm hover:border-indigo-300 transition-colors cursor-pointer">
+                                <input type="checkbox" v-model="form.payment_category_ids" :value="cat.id" class="text-indigo-600 focus:ring-indigo-500 rounded mt-0.5" />
+                                <div class="flex flex-col">
+                                    <span class="font-medium text-sm text-gray-800">{{ cat.name }}</span>
+                                    <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-1.5 py-0.5 rounded w-max mt-0.5">{{ cat.type === 'monthly' ? 'Bulanan' : 'Sekali Bayar' }} - {{ formatRupiah(cat.default_amount) }}</span>
+                                </div>
+                            </label>
+                            <div v-if="categories.length === 0" class="col-span-full text-center text-sm text-gray-500 py-4">
+                                Belum ada kategori tagihan.
+                            </div>
+                        </div>
+                        <InputError :message="form.errors.payment_category_ids" class="mt-2" />
                     </div>
 
                     <div class="mb-4 grid grid-cols-2 gap-4">
@@ -275,16 +274,7 @@ const onSearch = () => {
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <InputLabel value="Nominal Tagihan" />
-                        <div class="relative mt-1">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm font-medium">Rp</span>
-                            </div>
-                            <TextInput v-model="form.amount" type="number" class="pl-10 block w-full" required />
-                        </div>
-                        <InputError :message="form.errors.amount" class="mt-2" />
-                    </div>
+
 
                     <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                         <SecondaryButton @click="closeModals">Batal</SecondaryButton>

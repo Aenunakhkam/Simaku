@@ -47,10 +47,10 @@ class BillingController extends Controller
         $validated = $request->validate([
             'target_type' => 'required|in:classroom,student',
             'target_id' => 'required|integer',
-            'payment_category_id' => 'required|exists:payment_categories,id',
+            'payment_category_ids' => 'required|array|min:1',
+            'payment_category_ids.*' => 'exists:payment_categories,id',
             'academic_year_id' => 'required|exists:academic_years,id',
             'month' => 'nullable|integer|min:1|max:12',
-            'amount' => 'required|numeric|min:0',
         ]);
 
         $studentsToBill = collect();
@@ -65,24 +65,30 @@ class BillingController extends Controller
         }
 
         $count = 0;
-        foreach ($studentsToBill as $student) {
-            // Check if billing already exists to prevent duplicate
-            $exists = Billing::where('student_id', $student->id)
-                ->where('payment_category_id', $validated['payment_category_id'])
-                ->where('academic_year_id', $validated['academic_year_id'])
-                ->where('month', $validated['month'])
-                ->exists();
+        
+        // Fetch all selected categories so we know their default amounts
+        $categories = PaymentCategory::whereIn('id', $validated['payment_category_ids'])->get()->keyBy('id');
 
-            if (!$exists) {
-                Billing::create([
-                    'student_id' => $student->id,
-                    'payment_category_id' => $validated['payment_category_id'],
-                    'academic_year_id' => $validated['academic_year_id'],
-                    'month' => $validated['month'],
-                    'amount' => $validated['amount'],
-                    'is_paid' => false,
-                ]);
-                $count++;
+        foreach ($studentsToBill as $student) {
+            foreach ($validated['payment_category_ids'] as $categoryId) {
+                // Check if billing already exists to prevent duplicate
+                $exists = Billing::where('student_id', $student->id)
+                    ->where('payment_category_id', $categoryId)
+                    ->where('academic_year_id', $validated['academic_year_id'])
+                    ->where('month', $validated['month'])
+                    ->exists();
+
+                if (!$exists && isset($categories[$categoryId])) {
+                    Billing::create([
+                        'student_id' => $student->id,
+                        'payment_category_id' => $categoryId,
+                        'academic_year_id' => $validated['academic_year_id'],
+                        'month' => $validated['month'],
+                        'amount' => $categories[$categoryId]->default_amount,
+                        'is_paid' => false,
+                    ]);
+                    $count++;
+                }
             }
         }
 
