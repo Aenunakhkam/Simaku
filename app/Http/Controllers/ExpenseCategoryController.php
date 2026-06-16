@@ -10,17 +10,24 @@ class ExpenseCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = ExpenseCategory::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = ExpenseCategory::latest();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($perPage === 'all') {
+            $categories = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $categories = $query->paginate($perPage);
+        }
 
         return Inertia::render('ExpenseCategories/Index', [
-            'categories' => $categories,
-            'filters' => $request->only(['search'])
+            'categories' => $categories->withQueryString(),
+            'filters' => $request->only(['search', 'per_page'])
         ]);
     }
 

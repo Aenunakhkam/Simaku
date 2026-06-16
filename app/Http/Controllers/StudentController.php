@@ -6,28 +6,34 @@ use App\Models\Student;
 use App\Models\Classroom;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Shuchkin\SimpleXLSX;
+use Shuchkin\SimpleXLSXGen;
 
 class StudentController extends Controller
 {
     public function index(Request $request)
     {
-        $students = Student::with('classroom.major')
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('nisn', 'like', "%{$search}%")
-                      ->orWhere('nis', 'like', "%{$search}%")
-                      ->orWhereHas('classroom', function ($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%");
-                      });
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = Student::with('classroom.major')->latest();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+        }
+
+        if ($perPage === 'all') {
+            $students = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $students = $query->paginate($perPage);
+        }
 
         return Inertia::render('Students/Index', [
-            'students' => $students,
+            'students' => $students->withQueryString(),
             'classrooms' => Classroom::with('major')->orderBy('level')->orderBy('name')->get(),
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'per_page'])
         ]);
     }
 
@@ -65,6 +71,69 @@ class StudentController extends Controller
     {
         $student->delete();
 
-        return redirect()->back()->with('message', 'Data siswa berhasil dihapus.');
+        return redirect()->route('students.index')->with('success', 'Siswa berhasil dihapus.');
+    }
+
+    public function template()
+    {
+        $data = [
+            ['NISN', 'NIS', 'Nama Lengkap', 'Nama Kelas', 'Status'],
+            ['0012345678', '1001', 'Ahmad Dani', '10 RPL 1', 'Aktif'],
+            ['0012345679', '1002', 'Budi Santoso', '10 TKJ 2', 'Aktif'],
+        ];
+
+        return SimpleXLSXGen::fromArray($data)->downloadAs('Template_Data_Siswa.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        if ($xlsx = SimpleXLSX::parse($request->file('file')->path())) {
+            $rows = $xlsx->rows();
+            
+            // Skip the header row
+            array_shift($rows);
+
+            $importedCount = 0;
+
+            foreach ($rows as $row) {
+                // Ensure the row has enough columns
+                if (count($row) < 4) continue;
+
+                $nisn = trim($row[0]);
+                $nis = trim($row[1]);
+                $name = trim($row[2]);
+                $className = trim($row[3]);
+                $status = isset($row[4]) ? trim($row[4]) : 'Aktif';
+
+                if (empty($nisn) || empty($name) || empty($className)) continue;
+
+                // Find classroom by name, ignore case
+                $classroom = Classroom::whereRaw('LOWER(name) = ?', [strtolower($className)])->first();
+
+                // If classroom doesn't exist, we skip or handle it. Let's just skip for safety
+                if (!$classroom) continue;
+
+                // Create or Update student based on NISN
+                Student::updateOrCreate(
+                    ['nisn' => $nisn],
+                    [
+                        'nis' => $nis,
+                        'name' => $name,
+                        'classroom_id' => $classroom->id,
+                        'status' => $status
+                    ]
+                );
+
+                $importedCount++;
+            }
+
+            return redirect()->route('students.index')->with('success', "Berhasil mengimpor $importedCount data siswa.");
+        } else {
+            return redirect()->route('students.index')->with('error', 'Gagal membaca file Excel. ' . SimpleXLSX::parseError());
+        }
     }
 }

@@ -10,17 +10,25 @@ class MajorController extends Controller
 {
     public function index(Request $request)
     {
-        $majors = Major::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
-            })
-            ->paginate(10)
-            ->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = Major::latest();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+        }
+
+        if ($perPage === 'all') {
+            $majors = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $majors = $query->paginate($perPage);
+        }
 
         return Inertia::render('Majors/Index', [
-            'majors' => $majors,
-            'filters' => $request->only(['search'])
+            'majors' => $majors->withQueryString(),
+            'filters' => $request->only(['search', 'per_page'])
         ]);
     }
 

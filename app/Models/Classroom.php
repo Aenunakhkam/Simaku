@@ -20,4 +20,9 @@ class Classroom extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    public function billings()
+    {
+        return $this->hasManyThrough(Billing::class, Student::class);
+    }
 }

@@ -3,23 +3,38 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-defineProps({
+const props = defineProps({
     status: {
         type: String,
     },
+    academicYears: {
+        type: Array,
+        default: () => [],
+    }
 });
 
 const form = useForm({
     email: '',
     password: '',
+    academic_year_id: '',
     remember: false,
 });
 
 const showPassword = ref(false);
 const isVerifying = ref(false);
 const isVerified = ref(false);
+
+onMounted(() => {
+    // Cari tahun ajaran aktif, jika ada set sbg default
+    const active = props.academicYears?.find(y => y.is_active);
+    if (active) {
+        form.academic_year_id = active.id;
+    } else if (props.academicYears?.length > 0) {
+        form.academic_year_id = props.academicYears[0].id;
+    }
+});
 
 const handleVerify = (e) => {
     if (isVerified.value) {
@@ -60,6 +75,25 @@ const submit = () => {
 
 
         <form @submit.prevent="submit" class="space-y-6">
+            <div>
+                <label for="academic_year_id" class="block font-bold text-[#1a237e] mb-2 text-sm">Pilih Tahun Ajaran / Sesi</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <select
+                        id="academic_year_id"
+                        v-model="form.academic_year_id"
+                        class="block w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-xl text-gray-900 transition-all text-[15px] font-bold"
+                    >
+                        <option value="" disabled>-- Pilih Tahun Ajaran --</option>
+                        <option v-for="year in academicYears" :key="year.id" :value="year.id">
+                            {{ year.name }} {{ year.is_active ? '(Aktif)' : '' }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
             <div>
                 <label for="email" class="block font-bold text-[#1a237e] mb-2 text-sm">Alamat Email</label>
 

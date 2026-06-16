@@ -11,8 +11,11 @@ class ClassroomController extends Controller
 {
     public function index(Request $request)
     {
-        $classrooms = Classroom::with('major')
-            ->when($request->search, function ($query, $search) {
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = Classroom::with('major')
+            ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhereHas('major', function ($q) use ($search) {
                           $q->where('name', 'like', "%{$search}%")
@@ -20,14 +23,18 @@ class ClassroomController extends Controller
                       });
             })
             ->orderBy('level')
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+            ->orderBy('name');
+
+        if ($perPage === 'all') {
+            $classrooms = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $classrooms = $query->paginate($perPage);
+        }
 
         return Inertia::render('Classrooms/Index', [
-            'classrooms' => $classrooms,
+            'classrooms' => $classrooms->withQueryString(),
             'majors' => Major::orderBy('name')->get(),
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'per_page'])
         ]);
     }
 

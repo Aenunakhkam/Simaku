@@ -58,7 +58,11 @@ const deleteCategory = (id) => {
     }
 };
 
-const searchForm = useForm({ search: props.filters?.search || '' });
+const searchForm = useForm({ 
+    search: props.filters?.search || '',
+    per_page: props.filters?.per_page || '10'
+});
+
 const onSearch = () => {
     searchForm.get(route('expense-categories.index'), { preserveState: true });
 };
@@ -74,48 +78,77 @@ const onSearch = () => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100">
-                    
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="w-1/3 relative">
-                            <TextInput 
-                                v-model="searchForm.search" 
-                                @keyup.enter="onSearch"
-                                type="text" 
-                                class="w-full pl-4 pr-10 py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" 
-                                placeholder="Cari nama kategori..." 
-                            />
+                <!-- Data Table Container -->
+                <div class="bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-2xl border border-gray-100">
+                    <div class="p-6 md:px-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <span class="text-sm font-medium text-gray-500">Tampilkan</span>
+                            <select v-model="searchForm.per_page" @change="onSearch" class="border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span class="text-sm font-medium text-gray-500">data</span>
                         </div>
-                        <PrimaryButton @click="openCreateModal" class="shadow-sm hover:shadow transition-shadow">
-                            + Tambah Kategori
-                        </PrimaryButton>
+                        
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <div class="relative w-full md:w-64">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <TextInput 
+                                    v-model="searchForm.search" 
+                                    @keyup.enter="onSearch"
+                                    type="text" 
+                                    class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors text-sm" 
+                                    placeholder="Cari nama kategori pengeluaran..." 
+                                />
+                            </div>
+                            <PrimaryButton @click="openCreateModal" class="shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap">
+                                + Tambah Kategori
+                            </PrimaryButton>
+                        </div>
                     </div>
 
-                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                            <thead class="text-xs text-gray-500 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 font-semibold">Nama Kategori Pengeluaran</th>
-                                    <th class="px-6 py-4 text-right font-semibold">Aksi</th>
+                                    <th class="px-6 py-4 font-bold text-center w-12">No</th>
+                                    <th class="px-6 py-4 font-bold">Nama Kategori</th>
+                                    <th class="px-6 py-4 font-bold">Deskripsi</th>
+                                    <th class="px-6 py-4 text-right font-bold">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="category in categories.data" :key="category.id" class="bg-white border-b last:border-0 hover:bg-indigo-50/30 transition-colors">
+                                <tr v-for="(category, index) in categories.data" :key="category.id" class="bg-white border-b last:border-0 hover:bg-indigo-50/30 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                                        {{ (categories.current_page - 1) * categories.per_page + index + 1 }}
+                                    </td>
                                     <td class="px-6 py-4 font-medium text-gray-900">{{ category.name }}</td>
-                                    <td class="px-6 py-4 text-right space-x-3">
-                                        <button @click="openEditModal(category)" class="text-indigo-600 hover:text-indigo-900 font-medium transition-colors">Edit</button>
-                                        <button @click="deleteCategory(category.id)" class="text-red-600 hover:text-red-900 font-medium transition-colors">Hapus</button>
+                                    <td class="px-6 py-4">-</td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button @click="openEditModal(category)" class="inline-flex items-center justify-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button @click="deleteCategory(category.id)" class="inline-flex items-center justify-center text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
                                     </td>
                                 </tr>
                                 <tr v-if="categories.data.length === 0">
-                                    <td colspan="2" class="px-6 py-8 text-center text-gray-500 bg-gray-50/50">Belum ada data kategori pengeluaran.</td>
+                                    <td colspan="4" class="px-6 py-8 text-center text-gray-500 bg-gray-50/50">Belum ada data kategori pengeluaran.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="mt-6 flex justify-between items-center" v-if="categories.links && categories.data.length > 0">
-                        <span class="text-sm text-gray-500">Menampilkan {{ categories.from }} sampai {{ categories.to }} dari {{ categories.total }} data</span>
+                    <!-- Pagination -->
+                    <div class="p-6 md:px-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4" v-if="categories.links && categories.data.length > 0">
+                        <span class="text-sm text-gray-500">Menampilkan <span class="font-bold text-gray-900">{{ categories.from }}</span> sampai <span class="font-bold text-gray-900">{{ categories.to }}</span> dari <span class="font-bold text-gray-900">{{ categories.total }}</span> data</span>
                         <div class="flex space-x-1">
                             <template v-for="(link, p) in categories.links" :key="p">
                                 <a 
@@ -134,10 +167,14 @@ const onSearch = () => {
         </div>
 
         <Modal :show="isCreateModalOpen || isEditModalOpen" @close="closeModals">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-5">
-                    {{ isEditModalOpen ? 'Edit Kategori Pengeluaran' : 'Tambah Kategori Pengeluaran' }}
+            <div class="bg-gradient-to-b from-indigo-50/50 to-white px-6 py-5 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-[#1a237e] flex items-center">
+                    <svg v-if="!isEditModalOpen" class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    <svg v-else class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    {{ isEditModalOpen ? 'Perbarui Kategori Pengeluaran' : 'Tambah Kategori Pengeluaran Baru' }}
                 </h2>
+            </div>
+            <div class="p-6 sm:p-8">
 
                 <form @submit.prevent="isEditModalOpen ? updateCategory() : storeCategory()">
                     <div class="mb-6">

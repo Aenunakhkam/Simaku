@@ -13,7 +13,9 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $expenses = Expense::with(['category', 'user'])
+        $perPage = $request->input('per_page', 10);
+
+        $query = Expense::with(['category', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('voucher_number', 'like', "%{$search}%")
                       ->orWhere('note', 'like', "%{$search}%");
@@ -22,13 +24,17 @@ class ExpenseController extends Controller
                 $query->whereBetween('date', [$request->date_start, $request->date_end]);
             })
             ->orderBy('date', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(10)
-            ->withQueryString();
+            ->orderBy('id', 'desc');
+
+        if ($perPage === 'all') {
+            $expenses = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $expenses = $query->paginate($perPage);
+        }
 
         return Inertia::render('Expenses/Index', [
-            'expenses' => $expenses,
-            'filters' => $request->only(['search', 'date_start', 'date_end'])
+            'expenses' => $expenses->withQueryString(),
+            'filters' => $request->only(['search', 'date_start', 'date_end', 'per_page'])
         ]);
     }
 

@@ -10,17 +10,25 @@ class PaymentCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = PaymentCategory::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = PaymentCategory::latest();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+        }
+
+        if ($perPage === 'all') {
+            $categories = $query->paginate($query->count() > 0 ? $query->count() : 1);
+        } else {
+            $categories = $query->paginate($perPage);
+        }
 
         return Inertia::render('PaymentCategories/Index', [
-            'categories' => $categories,
-            'filters' => $request->only(['search'])
+            'categories' => $categories->withQueryString(),
+            'filters' => $request->only(['search', 'per_page'])
         ]);
     }
 
@@ -52,6 +60,10 @@ class PaymentCategoryController extends Controller
 
     public function destroy(PaymentCategory $paymentCategory)
     {
+        if ($paymentCategory->billings()->count() > 0) {
+            return redirect()->back()->with('error', 'Kategori ini tidak dapat dihapus karena sudah digunakan pada tagihan siswa.');
+        }
+
         $paymentCategory->delete();
 
         return redirect()->back()->with('message', 'Kategori pemasukan berhasil dihapus.');

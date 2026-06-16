@@ -2,63 +2,156 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
+use App\Models\Billing;
+use App\Models\Payment;
+use App\Models\PaymentDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Student::with(['classroom.major'])->where('status', 'active');
+
+        if ($request->search) {
+            $query->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('nisn', 'like', "%{$request->search}%");
+        }
+
+        $students = $query->paginate($request->per_page ?? 10)->withQueryString();
+
+        return Inertia::render('Payments/Index', [
+            'students' => $students,
+            'filters' => $request->only(['search', 'per_page']),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function process($studentId)
     {
-        //
+        $student = Student::with('classroom.major')->findOrFail($studentId);
+        
+        $academicYearId = session('academic_year_id');
+
+        $billings = Billing::with(['category', 'academicYear'])
+            ->withSum('paymentDetails', 'amount') // Load sum of payments for each billing
+            ->where('student_id', $student->id)
+            ->where('academic_year_id', $academicYearId)
+            ->get()
+            ->map(function ($billing) {
+                // Ensure paid_amount and remaining_amount are updated based on withSum
+                $billing->paid_amount = (float) $billing->payment_details_sum_amount;
+                $billing->remaining_amount = max(0, (float) $billing->amount - $billing->paid_amount);
+                return $billing;
+            });
+
+        // Ambil riwayat pembayaran (transaksi)
+        $payments = Payment::with(['paymentDetails.billing.category', 'paymentDetails.billing.academicYear', 'user'])
+            ->whereHas('paymentDetails.billing', function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId);
+            })
+            ->where('student_id', $studentId)
+            ->latest()
+            ->get();
+
+        return Inertia::render('Payments/Process', [
+            'student' => $student,
+            'billings' => $billings,
+            'payments' => $payments,
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request, $studentId)
     {
-        //
+        $validated = $request->validate([
+            'billings' => 'required|array',
+            'billings.*.id' => 'required|exists:billings,id',
+            'billings.*.pay_amount' => 'required|numeric|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $totalPayment = 0;
+            $invoiceNumber = 'INV-' . date('YmdHis') . '-' . rand(100, 999);
+
+            $payment = Payment::create([
+                'invoice_number' => $invoiceNumber,
+                'student_id' => $studentId,
+                'user_id' => auth()->id(),
+                'date' => now()->toDateString(),
+                'total_amount' => 0, // Will update later
+            ]);
+
+            foreach ($validated['billings'] as $item) {
+                $billing = Billing::findOrFail($item['id']);
+                $payAmount = (float) $item['pay_amount'];
+
+                // Ensure they don't overpay
+                if ($payAmount > $billing->remaining_amount) {
+                    $payAmount = $billing->remaining_amount;
+                }
+
+                if ($payAmount > 0) {
+                    PaymentDetail::create([
+                        'payment_id' => $payment->id,
+                        'billing_id' => $billing->id,
+                        'amount' => $payAmount,
+                    ]);
+
+                    $totalPayment += $payAmount;
+
+                    // Update billing status
+                    if ($billing->paid_amount + $payAmount >= $billing->amount) {
+                        $billing->update(['is_paid' => true]);
+                    }
+                }
+            }
+
+            $payment->update(['total_amount' => $totalPayment]);
+
+            DB::commit();
+
+            return redirect()->back()->with('message', 'Pembayaran berhasil diproses.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function destroy(Payment $payment)
     {
-        //
-    }
+        DB::beginTransaction();
+        try {
+            // Ambil detail pembayaran
+            $details = $payment->paymentDetails()->with('billing')->get();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            foreach ($details as $detail) {
+                $billing = $detail->billing;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+                // Hitung total cicilan selain transaksi yang akan dihapus ini
+                $otherPaymentsTotal = PaymentDetail::where('billing_id', $billing->id)
+                    ->where('id', '!=', $detail->id)
+                    ->sum('amount');
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+                // Update is_paid ke false jika totalnya kurang dari tagihan
+                if ($otherPaymentsTotal < $billing->amount) {
+                    $billing->update(['is_paid' => false]);
+                }
+            }
+
+            // Hapus detail (jika belum cascade, hapus manual)
+            $payment->paymentDetails()->delete();
+            
+            // Hapus payment utama
+            $payment->delete();
+
+            DB::commit();
+            return redirect()->back()->with('message', 'Transaksi berhasil dibatalkan. Saldo tagihan telah dikembalikan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal membatalkan transaksi: ' . $e->getMessage());
+        }
     }
 }

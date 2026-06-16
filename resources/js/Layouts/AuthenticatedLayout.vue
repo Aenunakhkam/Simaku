@@ -8,9 +8,14 @@ import SidebarLink from '@/Components/SidebarLink.vue';
 
 const page = usePage();
 const showingSidebar = ref(false);
+const desktopSidebarCollapsed = ref(false);
 
 const toggleSidebar = () => {
-    showingSidebar.value = !showingSidebar.value;
+    if (window.innerWidth >= 1024) {
+        desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value;
+    } else {
+        showingSidebar.value = !showingSidebar.value;
+    }
 };
 
 // Icons as SVG strings
@@ -66,7 +71,12 @@ watch(() => page.props.flash, () => {
         <div v-show="showingSidebar" class="fixed inset-0 z-20 bg-black/50 transition-opacity lg:hidden" @click="toggleSidebar"></div>
 
         <!-- Sidebar -->
-        <aside :class="['fixed inset-y-0 left-0 z-30 w-64 bg-[#1a237e] text-white flex flex-col transition-transform duration-300 lg:static lg:translate-x-0', showingSidebar ? 'translate-x-0' : '-translate-x-full']">
+        <aside :class="[
+            'fixed inset-y-0 left-0 z-30 w-64 bg-[#1a237e] text-white flex flex-col transition-all duration-300',
+            'lg:static lg:h-screen lg:shrink-0',
+            showingSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            desktopSidebarCollapsed ? 'lg:-ml-64' : 'lg:ml-0'
+        ]">
             
             <!-- Sidebar Header / Logo -->
             <div class="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
@@ -90,17 +100,34 @@ watch(() => page.props.flash, () => {
                 <!-- Keuangan Section -->
                 <div>
                     <div class="px-5 text-[11px] font-bold text-blue-300/70 uppercase tracking-widest mb-2">Transaksi Keuangan</div>
+                    <SidebarLink :href="route('payments.index')" :active="route().current('payments.*')" :icon="`<svg fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'></path></svg>`">
+                        Kasir Pembayaran
+                    </SidebarLink>
+                    <SidebarLink :href="route('billings.index')" :active="route().current('billings.*')" :icon="`<svg fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'></path></svg>`">
+                        Atur Tagihan
+                    </SidebarLink>
                     <SidebarLink :href="route('payment-categories.index')" :active="route().current('payment-categories.*')" :icon="icons.transaksi">
-                        Pemasukan / Tagihan
+                        Kategori Pemasukan
                     </SidebarLink>
                     <SidebarLink :href="route('expenses.index')" :active="route().current('expenses.*')" :icon="icons.pengeluaran">
                         Catat Pengeluaran
                     </SidebarLink>
                 </div>
 
+                <!-- Laporan & Statistik Section -->
+                <div>
+                    <div class="px-5 text-[11px] font-bold text-blue-300/70 uppercase tracking-widest mb-2 mt-2">Laporan & Statistik</div>
+                    <SidebarLink :href="route('reports.classrooms')" :active="route().current('reports.*')" :icon="`<svg fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'></path></svg>`">
+                        Statistik Kelas
+                    </SidebarLink>
+                </div>
+
                 <!-- Data Master Section -->
                 <div>
-                    <div class="px-5 text-[11px] font-bold text-blue-300/70 uppercase tracking-widest mb-2">Data Master & Kategori</div>
+                    <div class="px-5 text-[11px] font-bold text-blue-300/70 uppercase tracking-widest mb-2 mt-6">Data Master & Kategori</div>
+                    <SidebarLink :href="route('academic-years.index')" :active="route().current('academic-years.*')" :icon="`<svg fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'></path></svg>`">
+                        Tahun Ajaran
+                    </SidebarLink>
                     <SidebarLink :href="route('students.index')" :active="route().current('students.*')" :icon="icons.siswa">
                         Data Siswa
                     </SidebarLink>
@@ -140,7 +167,7 @@ watch(() => page.props.flash, () => {
                 
                 <!-- Left: Hamburger & Header Title -->
                 <div class="flex items-center gap-4 min-w-0">
-                    <button @click="toggleSidebar" class="p-2 -ml-2 text-gray-500 hover:text-[#1a237e] hover:bg-indigo-50 rounded-lg lg:hidden transition-colors">
+                    <button @click="toggleSidebar" class="p-2 -ml-2 text-gray-500 hover:text-[#1a237e] hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
                     <div class="truncate" v-if="$slots.header">
@@ -150,6 +177,11 @@ watch(() => page.props.flash, () => {
 
                 <!-- Right: Profile Dropdown -->
                 <div class="flex items-center shrink-0 ml-4">
+                    <div class="hidden sm:flex items-center px-4 py-1.5 mr-4 bg-indigo-50/50 rounded-full border border-indigo-100">
+                        <svg class="w-4 h-4 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="text-xs font-bold text-indigo-700">T.A: {{ $page.props.active_academic_year ? $page.props.active_academic_year.name : 'Belum Dipilih' }}</span>
+                    </div>
+
                     <Dropdown align="right" width="48">
                         <template #trigger>
                             <button type="button" class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2 sm:px-3 py-1.5 rounded-xl transition-colors focus:outline-none">

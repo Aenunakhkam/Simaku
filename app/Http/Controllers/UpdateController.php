@@ -7,37 +7,88 @@ use Illuminate\Http\Request;
 
 class UpdateController extends Controller
 {
+    private function parseGitLog($command)
+    {
+        exec("cd " . escapeshellarg(base_path()) . " && " . $command, $output, $returnVar);
+        if ($returnVar !== 0) {
+            return [];
+        }
+
+        $commits = [];
+        foreach ($output as $line) {
+            $parts = explode('|', $line, 4);
+            if (count($parts) >= 4) {
+                $commits[] = [
+                    'hash' => $parts[0],
+                    'date' => $parts[1],
+                    'message' => $parts[2],
+                    'author' => $parts[3]
+                ];
+            }
+        }
+        return $commits;
+    }
+
     public function index()
     {
-        $updates = [
+        // Jalankan fetch untuk memastikan kita mendapat status remote terbaru
+        exec("cd " . escapeshellarg(base_path()) . " && git fetch origin main 2>&1", $fetchOutput, $fetchStatus);
+
+        $gitFormat = '--pretty=format:"%H|%cd|%s|%an" --date=format:"%d/%m/%Y, %H.%M.%S"';
+        
+        // Commits jarak jauh (yang ada di Github)
+        $remoteCommits = $this->parseGitLog("git log -n 50 {$gitFormat} origin/main");
+
+        // Cek jumlah pembaruan baru yang belum ditarik
+        exec("cd " . escapeshellarg(base_path()) . " && git rev-list --count HEAD..origin/main 2>&1", $countOutput, $countReturn);
+        $newCommitsCount = ($countReturn === 0 && isset($countOutput[0])) ? (int) $countOutput[0] : 0;
+
+        // Waktu penarikan (fetch) terakhir
+        $fetchHeadPath = base_path('.git/FETCH_HEAD');
+        $lastFetch = 'Belum pernah';
+        if (file_exists($fetchHeadPath)) {
+            $lastFetch = date('d/m/Y H:i:s', filemtime($fetchHeadPath));
+        }
+
+        // Catatan rilis statis untuk tab Aplikasi
+        $appUpdates = [
             [
-                'version' => 'v1.1.0',
-                'date' => '16 Juni 2026',
-                'author' => 'Aenunakhkam',
-                'github' => 'https://github.com/Aenunakhkam/Simaku',
+                'version' => 'Versi 1.1.0',
                 'changes' => [
-                    'Perbaikan bug format Rupiah pada nominal default di kategori pembayaran.',
-                    'Pembaruan desain antarmuka (UI) menggunakan konsep modern Sidebar responsif.',
-                    'Penambahan Dashboard analisis keuangan tingkat lanjut (Total Kas, Pemasukan, Pengeluaran, Tunggakan).',
-                    'Implementasi notifikasi berbasis SweetAlert2.',
+                    '[Perbaikan] Format Rupiah pada nominal default di kategori pembayaran.',
+                    '[Pembaruan] Desain antarmuka (UI) menggunakan konsep modern Sidebar responsif.',
+                    '[Pembaruan] Penambahan Dashboard analisis keuangan tingkat lanjut.',
+                    '[Pembaruan] Implementasi notifikasi berbasis SweetAlert2.',
+                    '[Pembaruan] Fitur Backup Database dan Cek Pembaruan.',
                 ]
             ],
             [
-                'version' => 'v1.0.0',
-                'date' => 'Awal Rilis',
-                'author' => 'Aenunakhkam',
-                'github' => 'https://github.com/Aenunakhkam/Simaku',
+                'version' => 'Versi 1.0.0',
                 'changes' => [
-                    'Rilis awal aplikasi SIMAKU.',
-                    'Fitur manajemen master data: Kelas, Jurusan, Siswa.',
-                    'Fitur manajemen kategori pemasukan dan pengeluaran.',
-                    'Sistem login dan otentikasi admin sekolah.'
+                    '[Pembaruan] Rilis awal aplikasi SIMAKU.',
+                    '[Pembaruan] Fitur manajemen master data: Kelas, Jurusan, Siswa.',
+                    '[Pembaruan] Fitur manajemen kategori pemasukan dan pengeluaran.',
+                    '[Pembaruan] Sistem login dan otentikasi admin sekolah.'
                 ]
             ]
         ];
 
         return Inertia::render('Updates', [
-            'updates' => $updates
+            'appUpdates' => $appUpdates,
+            'remoteCommits' => $remoteCommits,
+            'newCommitsCount' => $newCommitsCount,
+            'lastFetch' => $lastFetch
         ]);
+    }
+
+    public function pull()
+    {
+        exec("cd " . escapeshellarg(base_path()) . " && git pull origin main 2>&1", $output, $returnVar);
+        
+        if ($returnVar !== 0) {
+            return back()->with('error', 'Gagal menarik pembaruan: ' . implode(" ", $output));
+        }
+
+        return back()->with('message', 'Pembaruan berhasil ditarik dari Github!');
     }
 }

@@ -17,6 +17,7 @@ const props = defineProps({
 
 const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 const editingStudent = ref(null);
 
 const form = useForm({
@@ -25,6 +26,10 @@ const form = useForm({
     name: '',
     classroom_id: '',
     status: 'active',
+});
+
+const importForm = useForm({
+    file: null,
 });
 
 const openCreateModal = () => {
@@ -45,8 +50,11 @@ const openEditModal = (student) => {
 const closeModals = () => {
     isCreateModalOpen.value = false;
     isEditModalOpen.value = false;
+    isImportModalOpen.value = false;
     form.reset();
     form.clearErrors();
+    importForm.reset();
+    importForm.clearErrors();
 };
 
 const storeStudent = () => {
@@ -61,13 +69,23 @@ const updateStudent = () => {
     });
 };
 
+const submitImport = () => {
+    importForm.post(route('students.import'), {
+        onSuccess: () => closeModals(),
+    });
+};
+
 const deleteStudent = (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
         useForm({}).delete(route('students.destroy', id));
     }
 };
 
-const searchForm = useForm({ search: props.filters?.search || '' });
+const searchForm = useForm({ 
+    search: props.filters?.search || '',
+    per_page: props.filters?.per_page || '10'
+});
+
 const onSearch = () => {
     searchForm.get(route('students.index'), { preserveState: true });
 };
@@ -84,36 +102,61 @@ const onSearch = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <!-- Data Table Container -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100">
-                    
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="w-1/3 relative">
-                            <TextInput 
-                                v-model="searchForm.search" 
-                                @keyup.enter="onSearch"
-                                type="text" 
-                                class="w-full pl-4 pr-10 py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" 
-                                placeholder="Cari nama, NISN, atau NIS..." 
-                            />
+                <div class="bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-2xl border border-gray-100">
+                    <div class="p-6 md:px-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <span class="text-sm font-medium text-gray-500">Tampilkan</span>
+                            <select v-model="searchForm.per_page" @change="onSearch" class="border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span class="text-sm font-medium text-gray-500">data</span>
                         </div>
-                        <PrimaryButton @click="openCreateModal" class="shadow-sm hover:shadow transition-shadow">
-                            + Tambah Siswa
-                        </PrimaryButton>
+                        
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <div class="relative w-full md:w-64">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <TextInput 
+                                    v-model="searchForm.search" 
+                                    @keyup.enter="onSearch"
+                                    type="text" 
+                                    class="w-full pl-10 pr-4 py-2 rounded-xl border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors" 
+                                    placeholder="Cari siswa..." 
+                                />
+                            </div>
+                            <SecondaryButton @click="isImportModalOpen = true" class="shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Import Excel
+                            </SecondaryButton>
+                            <PrimaryButton @click="openCreateModal" class="shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap">
+                                + Tambah Siswa
+                            </PrimaryButton>
+                        </div>
                     </div>
 
-                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                            <thead class="text-xs text-gray-500 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 font-semibold">NISN / NIS</th>
-                                    <th class="px-6 py-4 font-semibold">Nama Siswa</th>
-                                    <th class="px-6 py-4 font-semibold">Kelas & Jurusan</th>
-                                    <th class="px-6 py-4 font-semibold">Status</th>
-                                    <th class="px-6 py-4 text-right font-semibold">Aksi</th>
+                                    <th scope="col" class="px-6 py-4 font-bold text-center w-12">No</th>
+                                    <th scope="col" class="px-6 py-4 font-bold">NISN / NIS</th>
+                                    <th scope="col" class="px-6 py-4 font-bold">Nama Siswa</th>
+                                    <th scope="col" class="px-6 py-4 font-bold">Kelas & Jurusan</th>
+                                    <th scope="col" class="px-6 py-4 font-bold">Status</th>
+                                    <th scope="col" class="px-6 py-4 text-right font-bold">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="student in students.data" :key="student.id" class="bg-white border-b last:border-0 hover:bg-indigo-50/30 transition-colors">
+                                <tr v-for="(student, index) in students.data" :key="student.id" class="bg-white border-b last:border-0 hover:bg-indigo-50/30 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                                        {{ (students.current_page - 1) * students.per_page + index + 1 }}
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="font-medium text-gray-900">{{ student.nisn }}</div>
                                         <div class="text-xs text-gray-500">{{ student.nis || '-' }}</div>
@@ -129,21 +172,25 @@ const onSearch = () => {
                                         <span v-else-if="student.status === 'graduated'" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">Lulus</span>
                                         <span v-else class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Keluar</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right space-x-3">
-                                        <button @click="openEditModal(student)" class="text-indigo-600 hover:text-indigo-900 font-medium transition-colors">Edit</button>
-                                        <button @click="deleteStudent(student.id)" class="text-red-600 hover:text-red-900 font-medium transition-colors">Hapus</button>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button @click="openEditModal(student)" class="inline-flex items-center justify-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button @click="deleteStudent(student.id)" class="inline-flex items-center justify-center text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
                                     </td>
                                 </tr>
                                 <tr v-if="students.data.length === 0">
-                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500 bg-gray-50/50">Belum ada data siswa.</td>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 bg-gray-50/50">Tidak ada data siswa yang ditemukan.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Pagination -->
-                    <div class="mt-6 flex justify-between items-center" v-if="students.links && students.data.length > 0">
-                        <span class="text-sm text-gray-500">Menampilkan {{ students.from }} sampai {{ students.to }} dari {{ students.total }} data</span>
+                    <div class="p-6 md:px-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4" v-if="students.links && students.data.length > 0">
+                        <span class="text-sm text-gray-500">Menampilkan <span class="font-bold text-gray-900">{{ students.from }}</span> sampai <span class="font-bold text-gray-900">{{ students.to }}</span> dari <span class="font-bold text-gray-900">{{ students.total }}</span> data</span>
                         <div class="flex space-x-1">
                             <template v-for="(link, p) in students.links" :key="p">
                                 <a 
@@ -162,10 +209,14 @@ const onSearch = () => {
         </div>
 
         <Modal :show="isCreateModalOpen || isEditModalOpen" @close="closeModals">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-5">
-                    {{ isEditModalOpen ? 'Edit Siswa' : 'Tambah Siswa Baru' }}
+            <div class="bg-gradient-to-b from-indigo-50/50 to-white px-6 py-5 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-[#1a237e] flex items-center">
+                    <svg v-if="!isEditModalOpen" class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    <svg v-else class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    {{ isEditModalOpen ? 'Perbarui Data Siswa' : 'Tambah Siswa Baru' }}
                 </h2>
+            </div>
+            <div class="p-6 sm:p-8">
 
                 <form @submit.prevent="isEditModalOpen ? updateStudent() : storeStudent()">
                     <div class="grid grid-cols-2 gap-4 mb-4">
@@ -222,6 +273,61 @@ const onSearch = () => {
                         <SecondaryButton @click="closeModals">Batal</SecondaryButton>
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                             Simpan Data
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </div>
+        </Modal>
+
+        <!-- Import Modal -->
+        <Modal :show="isImportModalOpen" @close="closeModals">
+            <div class="bg-gradient-to-b from-green-50/50 to-white px-6 py-5 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-green-800 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Import Data Siswa (Excel)
+                </h2>
+            </div>
+            <div class="p-6 sm:p-8">
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800">
+                    <p class="font-bold mb-1">Panduan Import:</p>
+                    <ol class="list-decimal pl-5 space-y-1 mb-3">
+                        <li>Unduh template Excel kosong terlebih dahulu.</li>
+                        <li>Isi data siswa sesuai format kolom yang tersedia.</li>
+                        <li>Pastikan penulisan <strong>Nama Kelas</strong> sama persis dengan yang ada di sistem (contoh: "10 RPL 1").</li>
+                        <li>Unggah kembali file Excel yang sudah diisi ke sini.</li>
+                    </ol>
+                    <a :href="route('students.template')" class="inline-flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-800 underline">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Unduh Template Excel
+                    </a>
+                </div>
+
+                <form @submit.prevent="submitImport">
+                    <div class="mb-6">
+                        <InputLabel for="file" value="Pilih File Excel (.xlsx / .xls)" />
+                        <input 
+                            id="file" 
+                            type="file" 
+                            accept=".xlsx, .xls"
+                            @input="importForm.file = $event.target.files[0]"
+                            class="mt-2 block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2.5 file:px-4
+                                file:rounded-xl file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100 transition-all cursor-pointer border border-gray-200 rounded-xl" 
+                            required
+                        />
+                        <InputError :message="importForm.errors.file" class="mt-2" />
+                        <progress v-if="importForm.progress" :value="importForm.progress.percentage" max="100" class="w-full mt-2 h-2 rounded overflow-hidden">
+                            {{ importForm.progress.percentage }}%
+                        </progress>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                        <SecondaryButton @click="closeModals">Batal</SecondaryButton>
+                        <PrimaryButton :class="{ 'opacity-25': importForm.processing }" :disabled="importForm.processing || !importForm.file" class="bg-green-600 hover:bg-green-700">
+                            {{ importForm.processing ? 'Memproses...' : 'Mulai Import' }}
                         </PrimaryButton>
                     </div>
                 </form>

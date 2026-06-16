@@ -10,4 +10,9 @@ class PaymentCategory extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'type', 'default_amount'];
+
+    public function billings()
+    {
+        return $this->hasMany(Billing::class);
+    }
 }

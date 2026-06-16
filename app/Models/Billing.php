@@ -14,4 +14,22 @@ class Billing extends Model
     public function student() { return $this->belongsTo(Student::class); }
     public function category() { return $this->belongsTo(PaymentCategory::class, 'payment_category_id'); }
     public function academicYear() { return $this->belongsTo(AcademicYear::class); }
+    
+    public function paymentDetails() { return $this->hasMany(PaymentDetail::class); }
+
+    protected $appends = ['paid_amount', 'remaining_amount'];
+
+    public function getPaidAmountAttribute()
+    {
+        if (array_key_exists('payment_details_sum_amount', $this->attributes)) {
+            return (float) ($this->attributes['payment_details_sum_amount'] ?? 0);
+        }
+        // Fallback (N+1 warning, but safe)
+        return (float) $this->paymentDetails()->sum('amount');
+    }
+
+    public function getRemainingAmountAttribute()
+    {
+        return max(0, (float) $this->amount - $this->paid_amount);
+    }
 }
