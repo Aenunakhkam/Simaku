@@ -55,10 +55,8 @@ watch(() => page.props.flash, () => {
                 
                 <!-- Logo Top Left -->
                 <div class="flex items-center space-x-3 mb-16 lg:mb-0">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-800 to-indigo-900 rounded-lg flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                    </div>
-                    <span class="text-2xl font-extrabold text-[#1a237e] tracking-tight">SIMAKU</span>
+                    <img src="/favicon.png" alt="Logo SIMAKU" class="w-12 h-12 rounded-full shadow-xl border border-gray-100">
+                    <span class="text-3xl font-black text-[#1a237e] tracking-tighter" style="font-family: 'Montserrat', sans-serif;">SIMAKU</span>
                 </div>
 
                 <!-- Main Hero Text -->

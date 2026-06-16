@@ -42,8 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/updates', [\App\Http\Controllers\UpdateController::class, 'index'])->name('updates');
     Route::post('/updates/pull', [\App\Http\Controllers\UpdateController::class, 'pull'])->name('updates.pull');
-    Route::get('/backup', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
-    Route::get('/backup/download', [\App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+    Route::get('backup', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+    Route::post('backup/create', [\App\Http\Controllers\BackupController::class, 'create'])->name('backup.create');
+    Route::get('backup/download/{file}', [\App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+    Route::delete('backup/delete/{file}', [\App\Http\Controllers\BackupController::class, 'delete'])->name('backup.delete');
+    Route::post('backup/restore', [\App\Http\Controllers\BackupController::class, 'restore'])->name('backup.restore');
 
     Route::get('/reports/classrooms', [\App\Http\Controllers\ReportController::class, 'classrooms'])->name('reports.classrooms');
     Route::get('/reports/classrooms/{id}', [\App\Http\Controllers\ReportController::class, 'classroomDetail'])->name('reports.classroom.detail');

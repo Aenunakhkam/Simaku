@@ -81,10 +81,8 @@ watch(() => page.props.flash, () => {
             <!-- Sidebar Header / Logo -->
             <div class="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
                 <Link :href="route('dashboard')" class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white/10 backdrop-blur-md rounded-md flex items-center justify-center shadow-lg">
-                        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                    </div>
-                    <span class="text-xl font-extrabold tracking-tight">SIMAKU</span>
+                    <img src="/favicon.png" alt="Logo SIMAKU" class="w-10 h-10 rounded-full shadow-lg border border-white/20">
+                    <span class="text-2xl font-black tracking-tighter" style="font-family: 'Montserrat', sans-serif;">SIMAKU</span>
                 </Link>
             </div>
 
