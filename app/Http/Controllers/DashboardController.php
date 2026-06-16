@@ -43,6 +43,23 @@ class DashboardController extends Controller
         // Ambil transaksi terakhir (gabungan income dan expense) - Opsional, untuk sementara kirim kosong atau data terbaru
         $recentPayments = Payment::with(['user', 'student'])->latest()->take(5)->get();
 
+        $year = request('year', now()->year);
+
+        $incomeData = array_fill(1, 12, 0);
+        $expenseData = array_fill(1, 12, 0);
+
+        $payments = Payment::whereYear('date', $year)->get(['date', 'total_amount']);
+        foreach ($payments as $payment) {
+            $month = (int) date('m', strtotime($payment->date));
+            $incomeData[$month] += $payment->total_amount;
+        }
+
+        $expenses = Expense::whereYear('date', $year)->get(['date', 'amount']);
+        foreach ($expenses as $expense) {
+            $month = (int) date('m', strtotime($expense->date));
+            $expenseData[$month] += $expense->amount;
+        }
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_kas' => (float) $totalKas,
@@ -50,7 +67,12 @@ class DashboardController extends Controller
                 'expense_this_month' => (float) $expenseThisMonth,
                 'total_tunggakan' => (float) $totalTunggakan,
             ],
-            'recent_transactions' => $recentPayments
+            'recent_transactions' => $recentPayments,
+            'chartData' => [
+                'income' => array_values($incomeData),
+                'expense' => array_values($expenseData),
+                'selected_year' => (int) $year
+            ]
         ]);
     }
 }

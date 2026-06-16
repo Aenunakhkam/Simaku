@@ -1,14 +1,77 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { Bar } from 'vue-chartjs';
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const props = defineProps({
     stats: Object,
     recent_transactions: Array,
+    chartData: Object,
 });
 
 const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+};
+
+const selectedYear = ref(props.chartData?.selected_year || new Date().getFullYear());
+
+const handleYearChange = () => {
+    router.get(route('dashboard'), { year: selectedYear.value }, { preserveState: true, preserveScroll: true });
+};
+
+const barChartData = computed(() => ({
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'],
+    datasets: [
+        {
+            label: 'Pemasukan',
+            backgroundColor: '#16a34a',
+            borderRadius: 4,
+            data: props.chartData?.income || Array(12).fill(0)
+        },
+        {
+            label: 'Pengeluaran',
+            backgroundColor: '#ea580c',
+            borderRadius: 4,
+            data: props.chartData?.expense || Array(12).fill(0)
+        }
+    ]
+}));
+
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                        label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(context.parsed.y);
+                    }
+                    return label;
+                }
+            }
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                callback: function(value) {
+                    if (value === 0) return '0';
+                    return 'Rp ' + (value / 1000).toLocaleString('id-ID') + 'k';
+                }
+            }
+        }
+    }
 };
 </script>
 
@@ -99,17 +162,15 @@ const formatRupiah = (number) => {
             <!-- Chart Area (Mockup) -->
             <div class="lg:col-span-2 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-gray-100/60 p-6 flex flex-col">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-[#1a237e] text-lg">Grafik Arus Kas (6 Bulan)</h3>
-                    <select class="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-[#1a237e] focus:border-[#1a237e]">
-                        <option>2026</option>
-                        <option>2025</option>
+                    <h3 class="font-bold text-[#1a237e] text-lg">Grafik Arus Kas (Bulanan)</h3>
+                    <select v-model="selectedYear" @change="handleYearChange" class="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-[#1a237e] focus:border-[#1a237e]">
+                        <option :value="new Date().getFullYear()">{{ new Date().getFullYear() }}</option>
+                        <option :value="new Date().getFullYear() - 1">{{ new Date().getFullYear() - 1 }}</option>
+                        <option :value="new Date().getFullYear() - 2">{{ new Date().getFullYear() - 2 }}</option>
                     </select>
                 </div>
-                <div class="flex-1 bg-gray-50/50 rounded-xl border border-gray-100 border-dashed flex items-center justify-center min-h-[250px]">
-                    <div class="text-center text-gray-400">
-                        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-                        <p class="text-sm font-medium">Grafik akan tampil setelah ada data transaksi.</p>
-                    </div>
+                <div class="flex-1 bg-white min-h-[300px] relative">
+                    <Bar v-if="props.chartData" :data="barChartData" :options="chartOptions" />
                 </div>
             </div>
 
