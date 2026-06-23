@@ -4,6 +4,16 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+
+Route::get('/fix-db', function () {
+    try {
+        DB::statement('ALTER TABLE students ALTER COLUMN classroom_id DROP NOT NULL');
+        return "Database berhasil diperbaiki! Silakan coba import lagi.";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
 
 Route::get('/', function () {
     return redirect()->route('login');
