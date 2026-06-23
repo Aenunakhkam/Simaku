@@ -206,6 +206,10 @@ const onSearch = () => {
                         <InputLabel value="Terapkan Tagihan Untuk" />
                         <div class="flex space-x-4 mt-2">
                             <label class="flex items-center text-sm">
+                                <input type="radio" v-model="form.target_type" value="all" class="text-indigo-600 focus:ring-indigo-500 rounded-full" />
+                                <span class="ml-2 font-medium text-gray-700">Semua Siswa</span>
+                            </label>
+                            <label class="flex items-center text-sm">
                                 <input type="radio" v-model="form.target_type" value="classroom" class="text-indigo-600 focus:ring-indigo-500 rounded-full" />
                                 <span class="ml-2 font-medium text-gray-700">Satu Kelas Penuh</span>
                             </label>

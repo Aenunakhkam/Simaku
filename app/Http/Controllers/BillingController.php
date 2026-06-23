@@ -53,8 +53,8 @@ class BillingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'target_type' => 'required|in:classroom,student',
-            'target_id' => 'required|integer',
+            'target_type' => 'required|in:classroom,student,all',
+            'target_id' => 'required_unless:target_type,all|nullable|integer',
             'payment_category_ids' => 'required|array|min:1',
             'payment_category_ids.*' => 'exists:payment_categories,id',
             'academic_year_id' => 'required|exists:academic_years,id',
@@ -63,7 +63,9 @@ class BillingController extends Controller
 
         $studentsToBill = collect();
 
-        if ($validated['target_type'] === 'classroom') {
+        if ($validated['target_type'] === 'all') {
+            $studentsToBill = Student::where('status', 'active')->get();
+        } elseif ($validated['target_type'] === 'classroom') {
             $studentsToBill = Student::where('classroom_id', $validated['target_id'])
                                      ->where('status', 'active')
                                      ->get();
