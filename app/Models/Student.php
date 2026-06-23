@@ -20,4 +20,9 @@ class Student extends Model
     {
         return $this->hasMany(Billing::class);
     }
+
+    public function paymentDetails()
+    {
+        return $this->hasManyThrough(PaymentDetail::class, Billing::class);
+    }
 }

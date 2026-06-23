@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
     
     // Billings & Payments
+    Route::get('/billings/monitoring', [\App\Http\Controllers\BillingMonitoringController::class, 'index'])->name('billings.monitoring');
     Route::resource('billings', \App\Http\Controllers\BillingController::class);
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/process/{student}', [\App\Http\Controllers\PaymentController::class, 'process'])->name('payments.process');
