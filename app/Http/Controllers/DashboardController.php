@@ -60,12 +60,15 @@ class DashboardController extends Controller
             $expenseData[$month] += $expense->amount;
         }
 
+        $totalStudents = \App\Models\Student::where('status', 'active')->count();
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_kas' => (float) $totalKas,
                 'income_this_month' => (float) $incomeThisMonth,
                 'expense_this_month' => (float) $expenseThisMonth,
                 'total_tunggakan' => (float) $totalTunggakan,
+                'total_students' => $totalStudents,
             ],
             'recent_transactions' => $recentPayments,
             'chartData' => [

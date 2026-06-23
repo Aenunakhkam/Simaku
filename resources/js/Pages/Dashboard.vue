@@ -115,8 +115,18 @@ const chartOptions = {
             </div>
         </div>
 
-        <!-- 4 Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6">
+        <!-- 5 Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6 mb-6">
+            <!-- Total Siswa -->
+            <div class="bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-gray-100/60 p-5 relative group hover:-translate-y-1 transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg class="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Siswa Aktif</div>
+                <div class="text-3xl font-black text-indigo-600">{{ stats?.total_students || 0 }}</div>
+                <div class="mt-3 text-[10px] font-semibold text-indigo-700 bg-indigo-50/80 border border-indigo-100 inline-block px-2 py-1 rounded-md">Terdaftar di Sistem</div>
+            </div>
+
             <!-- Saldo Kas -->
             <div class="bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-gray-100/60 p-5 relative group hover:-translate-y-1 transition-all">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
