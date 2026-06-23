@@ -1,0 +1,1 @@
+@media print{body *{visibility:hidden}.print\:bg-white,.print\:bg-white *{visibility:visible}.print\:bg-white{width:100%;position:absolute;top:0;left:0}@page{margin:0}body{margin:1.6cm}}
