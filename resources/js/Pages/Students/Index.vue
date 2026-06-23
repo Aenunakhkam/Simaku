@@ -292,8 +292,8 @@ const onSearch = () => {
                     <p class="font-bold mb-1">Panduan Import:</p>
                     <ol class="list-decimal pl-5 space-y-1 mb-3">
                         <li>Unduh template Excel kosong terlebih dahulu.</li>
-                        <li>Isi data siswa sesuai format kolom yang tersedia.</li>
-                        <li>Pastikan penulisan <strong>Nama Kelas</strong> sama persis dengan yang ada di sistem (contoh: "10 RPL 1").</li>
+                        <li>Isi data siswa. (NIS, Nama Kelas, dan Status <strong>Boleh Dikosongkan</strong>).</li>
+                        <li>Jika mengisi Kelas, pastikan namanya sesuai (contoh: "10 RPL 1").</li>
                         <li>Unggah kembali file Excel yang sudah diisi ke sini.</li>
                     </ol>
                     <a :href="route('students.template')" class="inline-flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-800 underline">

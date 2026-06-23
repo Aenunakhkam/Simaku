@@ -24,6 +24,23 @@ Route::get('/debug-db', function () {
     return response()->json($columns);
 });
 
+Route::get('/test-insert', function () {
+    try {
+        DB::table('students')->insert([
+            'nisn' => 'test_nisn_' . time(),
+            'nis' => null,
+            'name' => 'TEST STUDENT',
+            'classroom_id' => null,
+            'status' => 'Aktif',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return "INSERT BERHASIL!";
+    } catch (\Exception $e) {
+        return "ERROR INSERT: " . $e->getMessage();
+    }
+});
+
 Route::get('/', function () {
     return redirect()->route('login');
 });

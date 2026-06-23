@@ -100,12 +100,9 @@ class StudentController extends Controller
             $importedCount = 0;
 
             foreach ($rows as $row) {
-                // Ensure the row has enough columns
-                if (count($row) < 4) continue;
-
-                $nisn = trim($row[0]);
-                $nis = trim($row[1]);
-                $name = trim($row[2]);
+                $nisn = isset($row[0]) ? trim($row[0]) : '';
+                $nis = isset($row[1]) ? trim($row[1]) : '';
+                $name = isset($row[2]) ? trim($row[2]) : '';
                 $className = isset($row[3]) ? trim($row[3]) : '';
                 $status = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : 'Aktif';
 
