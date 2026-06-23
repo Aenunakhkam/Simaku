@@ -43,7 +43,7 @@ class StudentController extends Controller
             'nisn' => 'required|string|max:20|unique:students',
             'nis' => 'nullable|string|max:20|unique:students',
             'name' => 'required|string|max:255',
-            'classroom_id' => 'required|exists:classrooms,id',
+            'classroom_id' => 'nullable|exists:classrooms,id',
             'status' => 'required|in:active,graduated,dropped_out',
         ]);
 
@@ -58,7 +58,7 @@ class StudentController extends Controller
             'nisn' => 'required|string|max:20|unique:students,nisn,' . $student->id,
             'nis' => 'nullable|string|max:20|unique:students,nis,' . $student->id,
             'name' => 'required|string|max:255',
-            'classroom_id' => 'required|exists:classrooms,id',
+            'classroom_id' => 'nullable|exists:classrooms,id',
             'status' => 'required|in:active,graduated,dropped_out',
         ]);
 
@@ -109,13 +109,15 @@ class StudentController extends Controller
                 $className = trim($row[3]);
                 $status = isset($row[4]) ? trim($row[4]) : 'Aktif';
 
-                if (empty($nisn) || empty($name) || empty($className)) continue;
+                if (empty($nisn) || empty($name)) continue;
 
-                // Find classroom by name, ignore case
-                $classroom = Classroom::whereRaw('LOWER(name) = ?', [strtolower($className)])->first();
-
-                // If classroom doesn't exist, we skip or handle it. Let's just skip for safety
-                if (!$classroom) continue;
+                $classroomId = null;
+                if (!empty($className)) {
+                    $classroom = Classroom::whereRaw('LOWER(name) = ?', [strtolower($className)])->first();
+                    if ($classroom) {
+                        $classroomId = $classroom->id;
+                    }
+                }
 
                 // Create or Update student based on NISN
                 Student::updateOrCreate(
@@ -123,7 +125,7 @@ class StudentController extends Controller
                     [
                         'nis' => $nis,
                         'name' => $name,
-                        'classroom_id' => $classroom->id,
+                        'classroom_id' => $classroomId,
                         'status' => $status
                     ]
                 );
