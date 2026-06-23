@@ -24,6 +24,17 @@ const onSearch = () => {
 const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 };
+
+import { computed } from 'vue';
+
+const totalStudents = computed(() => {
+    return (props.stats?.lunas || 0) + (props.stats?.nyicil || 0) + (props.stats?.belum_bayar || 0);
+});
+
+const getPercentage = (count) => {
+    if (totalStudents.value === 0) return '0%';
+    return Math.round((count / totalStudents.value) * 100) + '%';
+};
 </script>
 
 <template>
@@ -45,7 +56,10 @@ const formatRupiah = (number) => {
                             <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div class="text-sm font-bold text-green-700 uppercase tracking-wider mb-2">Sudah Lunas</div>
-                        <div class="text-4xl font-black text-green-600">{{ stats?.lunas || 0 }} <span class="text-lg font-bold text-green-500">Siswa</span></div>
+                        <div class="text-4xl font-black text-green-600 flex items-center gap-2">
+                            {{ stats?.lunas || 0 }} <span class="text-lg font-bold text-green-500">Siswa</span>
+                            <span class="ml-2 px-2.5 py-1 bg-green-200 text-green-800 text-sm font-bold rounded-xl shadow-sm">{{ getPercentage(stats?.lunas || 0) }}</span>
+                        </div>
                         <p class="text-xs text-green-600 mt-2 font-medium">Tagihan tahun ini telah terbayar penuh.</p>
                     </div>
 
@@ -55,7 +69,10 @@ const formatRupiah = (number) => {
                             <svg class="w-16 h-16 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div class="text-sm font-bold text-orange-700 uppercase tracking-wider mb-2">Mencicil / Belum Lunas</div>
-                        <div class="text-4xl font-black text-orange-600">{{ stats?.nyicil || 0 }} <span class="text-lg font-bold text-orange-500">Siswa</span></div>
+                        <div class="text-4xl font-black text-orange-600 flex items-center gap-2">
+                            {{ stats?.nyicil || 0 }} <span class="text-lg font-bold text-orange-500">Siswa</span>
+                            <span class="ml-2 px-2.5 py-1 bg-orange-200 text-orange-800 text-sm font-bold rounded-xl shadow-sm">{{ getPercentage(stats?.nyicil || 0) }}</span>
+                        </div>
                         <p class="text-xs text-orange-600 mt-2 font-medium">Mempunyai sisa tagihan yang harus dibayar.</p>
                     </div>
 
@@ -65,7 +82,10 @@ const formatRupiah = (number) => {
                             <svg class="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                         </div>
                         <div class="text-sm font-bold text-red-700 uppercase tracking-wider mb-2">Belum Bayar</div>
-                        <div class="text-4xl font-black text-red-600">{{ stats?.belum_bayar || 0 }} <span class="text-lg font-bold text-red-500">Siswa</span></div>
+                        <div class="text-4xl font-black text-red-600 flex items-center gap-2">
+                            {{ stats?.belum_bayar || 0 }} <span class="text-lg font-bold text-red-500">Siswa</span>
+                            <span class="ml-2 px-2.5 py-1 bg-red-200 text-red-800 text-sm font-bold rounded-xl shadow-sm">{{ getPercentage(stats?.belum_bayar || 0) }}</span>
+                        </div>
                         <p class="text-xs text-red-600 mt-2 font-medium">Belum ada pembayaran masuk sama sekali.</p>
                     </div>
                 </div>
