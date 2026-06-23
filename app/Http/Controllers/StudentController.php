@@ -106,10 +106,12 @@ class StudentController extends Controller
                 $nisn = trim($row[0]);
                 $nis = trim($row[1]);
                 $name = trim($row[2]);
-                $className = trim($row[3]);
-                $status = isset($row[4]) ? trim($row[4]) : 'Aktif';
+                $className = isset($row[3]) ? trim($row[3]) : '';
+                $status = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : 'Aktif';
 
                 if (empty($nisn) || empty($name)) continue;
+
+                $nis = $nis === '' ? null : $nis;
 
                 $classroomId = null;
                 if (!empty($className)) {

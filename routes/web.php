@@ -15,6 +15,15 @@ Route::get('/fix-db', function () {
     }
 });
 
+Route::get('/debug-db', function () {
+    $columns = DB::select("
+        SELECT column_name, is_nullable 
+        FROM information_schema.columns 
+        WHERE table_name = 'students'
+    ");
+    return response()->json($columns);
+});
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
