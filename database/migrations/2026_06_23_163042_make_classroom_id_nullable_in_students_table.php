@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,9 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->unsignedBigInteger('classroom_id')->nullable()->change();
-        });
+        DB::statement('ALTER TABLE students ALTER COLUMN classroom_id DROP NOT NULL');
     }
 
     /**
@@ -21,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->unsignedBigInteger('classroom_id')->nullable(false)->change();
-        });
+        DB::statement('ALTER TABLE students ALTER COLUMN classroom_id SET NOT NULL');
     }
 };
