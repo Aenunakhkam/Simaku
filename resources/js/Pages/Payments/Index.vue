@@ -6,11 +6,13 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 const props = defineProps({
     students: Object,
+    classrooms: Array,
     filters: Object,
 });
 
 const searchForm = useForm({
     search: props.filters?.search || '',
+    classroom_id: props.filters?.classroom_id || '',
     per_page: props.filters?.per_page || '10'
 });
 
@@ -33,8 +35,16 @@ const onSearch = () => {
                     <h3 class="text-2xl font-bold text-[#1a237e] mb-2">Sistem Pembayaran Siswa</h3>
                     <p class="text-gray-500 mb-6">Silakan cari siswa berdasarkan Nama atau NISN untuk memproses pembayaran tagihan.</p>
                     
-                    <div class="max-w-2xl mx-auto flex gap-3">
-                        <div class="relative w-full">
+                    <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-3">
+                        <div class="w-full md:w-1/3">
+                            <select v-model="searchForm.classroom_id" @change="onSearch" class="w-full py-3 px-4 rounded-xl border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors text-base">
+                                <option value="">Semua Kelas</option>
+                                <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
+                                    {{ classroom.level }} {{ classroom.name }} ({{ classroom.major?.name }})
+                                </option>
+                            </select>
+                        </div>
+                        <div class="relative w-full md:w-2/3">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
@@ -46,8 +56,8 @@ const onSearch = () => {
                                 placeholder="Masukkan Nama atau NISN..." 
                             />
                         </div>
-                        <PrimaryButton @click="onSearch" class="py-3 px-6 rounded-xl text-base shadow-md hover:shadow-lg transition-all">
-                            Cari Siswa
+                        <PrimaryButton @click="onSearch" class="py-3 px-8 rounded-xl text-base shadow-md hover:shadow-lg transition-all w-full md:w-auto flex justify-center">
+                            Cari
                         </PrimaryButton>
                     </div>
                 </div>

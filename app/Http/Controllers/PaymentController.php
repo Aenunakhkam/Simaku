@@ -17,15 +17,23 @@ class PaymentController extends Controller
         $query = Student::with(['classroom.major'])->where('status', 'active');
 
         if ($request->search) {
-            $query->where('name', 'like', "%{$request->search}%")
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
                   ->orWhere('nisn', 'like', "%{$request->search}%");
+            });
+        }
+        
+        if ($request->classroom_id) {
+            $query->where('classroom_id', $request->classroom_id);
         }
 
         $students = $query->paginate($request->per_page ?? 10)->withQueryString();
+        $classrooms = \App\Models\Classroom::with('major')->get();
 
         return Inertia::render('Payments/Index', [
             'students' => $students,
-            'filters' => $request->only(['search', 'per_page']),
+            'classrooms' => $classrooms,
+            'filters' => $request->only(['search', 'classroom_id', 'per_page']),
         ]);
     }
 

@@ -20,14 +20,22 @@ class BillingController extends Controller
 
         if ($request->search) {
             $query->whereHas('student', function($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('nisn', 'like', "%{$request->search}%");
+                $q->where(function($sq) use ($request) {
+                    $sq->where('name', 'like', "%{$request->search}%")
+                       ->orWhere('nisn', 'like', "%{$request->search}%");
+                });
+            });
+        }
+        
+        if ($request->classroom_id) {
+            $query->whereHas('student', function($q) use ($request) {
+                $q->where('classroom_id', $request->classroom_id);
             });
         }
 
         $billings = $query->paginate($request->per_page ?? 10)->withQueryString();
         
-        $classrooms = Classroom::all();
+        $classrooms = Classroom::with('major')->get();
         $students = Student::with('classroom')->where('status', 'active')->get();
         $categories = PaymentCategory::all();
         $academicYears = AcademicYear::all();
@@ -38,7 +46,7 @@ class BillingController extends Controller
             'students' => $students,
             'categories' => $categories,
             'academicYears' => $academicYears,
-            'filters' => $request->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'classroom_id', 'per_page']),
         ]);
     }
 
