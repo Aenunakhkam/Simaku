@@ -104,7 +104,14 @@ class StudentController extends Controller
                 $nis = isset($row[1]) ? trim($row[1]) : '';
                 $name = isset($row[2]) ? trim($row[2]) : '';
                 $className = isset($row[3]) ? trim($row[3]) : '';
-                $status = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : 'Aktif';
+                $statusRaw = isset($row[4]) && trim($row[4]) !== '' ? strtolower(trim($row[4])) : 'aktif';
+                $statusMap = [
+                    'aktif' => 'active',
+                    'lulus' => 'graduated',
+                    'keluar' => 'dropped_out',
+                    'pindah' => 'dropped_out'
+                ];
+                $status = isset($statusMap[$statusRaw]) ? $statusMap[$statusRaw] : 'active';
 
                 if (empty($nisn) || empty($name)) continue;
 
