@@ -25,6 +25,7 @@ const form = useForm({
 const showPassword = ref(false);
 const isVerifying = ref(false);
 const isVerified = ref(false);
+const showCaptchaError = ref(false);
 
 onMounted(() => {
     // Cari tahun ajaran aktif, jika ada set sbg default
@@ -46,11 +47,18 @@ const handleVerify = (e) => {
     setTimeout(() => {
         isVerifying.value = false;
         isVerified.value = true;
+        showCaptchaError.value = false;
     }, 1500);
 };
 
 const submit = () => {
     form.clearErrors();
+    showCaptchaError.value = false;
+    
+    if (!isVerified.value) {
+        showCaptchaError.value = true;
+        return;
+    }
     
     if (!form.email || !form.password) {
         if (!form.email) form.setError('email', 'Email atau sandi harus di isi');
@@ -73,6 +81,17 @@ const submit = () => {
             <p class="text-[15px] text-gray-500 font-medium">Masuk untuk mengakses Layanan SIMAKU Sekolah</p>
         </div>
 
+        <!-- Warning Banner for Unchecked Verification -->
+        <div v-if="showCaptchaError" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+            <svg class="h-5 w-5 text-red-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <h4 class="text-sm font-bold text-red-800">Login Gagal</h4>
+                <p class="text-xs font-semibold text-red-600 mt-0.5">Invalid captcha</p>
+                <p class="text-xs text-red-700 mt-1">Periksa kembali data yang Anda masukkan. Jika masalah berlanjut, hubungi tim dukungan.</p>
+            </div>
+        </div>
 
         <form @submit.prevent="submit" class="space-y-6">
             <div>
@@ -142,7 +161,7 @@ const submit = () => {
                 <InputLabel value="Verifikasi" class="font-bold text-[#1a237e] mb-2 text-sm" />
                 <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-3 bg-gray-50/50 max-w-[280px]">
                     <div v-if="isVerifying" class="w-5 h-5 border-2 border-[#1a237e] border-t-transparent rounded-full animate-spin ml-1"></div>
-                    <input v-else type="checkbox" id="captcha-checkbox" required :checked="isVerified" class="w-5 h-5 text-[#1a237e] rounded border-gray-300 focus:ring-[#1a237e] ml-1 pointer-events-none">
+                    <input v-else type="checkbox" id="captcha-checkbox" :checked="isVerified" class="w-5 h-5 text-[#1a237e] rounded border-gray-300 focus:ring-[#1a237e] ml-1 pointer-events-none">
                     <label for="captcha-checkbox" class="text-sm font-bold text-[#1a237e] cursor-pointer flex-1" @click.prevent="handleVerify">Saya bukan robot</label>
                     <div class="ml-auto">
                         <!-- Captcha Logo Placeholder -->
