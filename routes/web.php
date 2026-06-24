@@ -60,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('classrooms', \App\Http\Controllers\ClassroomController::class);
     Route::get('students/template', [\App\Http\Controllers\StudentController::class, 'template'])->name('students.template');
     Route::post('students/import', [\App\Http\Controllers\StudentController::class, 'import'])->name('students.import');
+    Route::post('students/bulk-update-class', [\App\Http\Controllers\StudentController::class, 'bulkUpdateClass'])->name('students.bulk-update-class');
     Route::resource('students', \App\Http\Controllers\StudentController::class);
     
     Route::resource('academic-years', \App\Http\Controllers\AcademicYearController::class);

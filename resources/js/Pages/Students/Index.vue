@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -18,7 +18,9 @@ const props = defineProps({
 const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 const isImportModalOpen = ref(false);
+const isBulkUpdateModalOpen = ref(false);
 const editingStudent = ref(null);
+const selectedStudents = ref([]);
 
 const form = useForm({
     nisn: '',
@@ -31,6 +33,39 @@ const form = useForm({
 const importForm = useForm({
     file: null,
 });
+
+const bulkUpdateForm = useForm({
+    student_ids: [],
+    classroom_id: '',
+});
+
+const isAllSelected = computed({
+    get: () => {
+        return props.students.data && props.students.data.length > 0 && selectedStudents.value.length === props.students.data.length;
+    },
+    set: (val) => {
+        if (val && props.students.data) {
+            selectedStudents.value = props.students.data.map(s => s.id);
+        } else {
+            selectedStudents.value = [];
+        }
+    }
+});
+
+const openBulkUpdateModal = () => {
+    bulkUpdateForm.classroom_id = '';
+    isBulkUpdateModalOpen.value = true;
+};
+
+const submitBulkUpdate = () => {
+    bulkUpdateForm.student_ids = selectedStudents.value;
+    bulkUpdateForm.post(route('students.bulk-update-class'), {
+        onSuccess: () => {
+            closeModals();
+            selectedStudents.value = [];
+        }
+    });
+};
 
 const openCreateModal = () => {
     form.reset();
@@ -51,10 +86,13 @@ const closeModals = () => {
     isCreateModalOpen.value = false;
     isEditModalOpen.value = false;
     isImportModalOpen.value = false;
+    isBulkUpdateModalOpen.value = false;
     form.reset();
     form.clearErrors();
     importForm.reset();
     importForm.clearErrors();
+    bulkUpdateForm.reset();
+    bulkUpdateForm.clearErrors();
 };
 
 const storeStudent = () => {
@@ -130,6 +168,9 @@ const onSearch = () => {
                                     placeholder="Cari siswa..." 
                                 />
                             </div>
+                            <PrimaryButton v-if="selectedStudents.length > 0" @click="openBulkUpdateModal" class="shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap bg-indigo-600 mr-1">
+                                Naik Kelas Massal ({{ selectedStudents.length }})
+                            </PrimaryButton>
                             <SecondaryButton @click="isImportModalOpen = true" class="shadow-md hover:shadow-lg transition-all rounded-xl whitespace-nowrap bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                 Import Excel
@@ -144,7 +185,9 @@ const onSearch = () => {
                         <table class="w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-gray-500 uppercase tracking-wider bg-gray-50/80 border-b border-gray-100">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 font-bold text-center w-12">No</th>
+                                    <th scope="col" class="px-6 py-4 font-bold text-center w-12">
+                                        <input type="checkbox" v-model="isAllSelected" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 shadow-sm cursor-pointer" title="Pilih Semua">
+                                    </th>
                                     <th scope="col" class="px-6 py-4 font-bold">NISN / NIS</th>
                                     <th scope="col" class="px-6 py-4 font-bold">Nama Siswa</th>
                                     <th scope="col" class="px-6 py-4 font-bold">Kelas & Jurusan</th>
@@ -155,7 +198,7 @@ const onSearch = () => {
                             <tbody>
                                 <tr v-for="(student, index) in students.data" :key="student.id" class="bg-white border-b last:border-0 hover:bg-indigo-50/30 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                                        {{ (students.current_page - 1) * students.per_page + index + 1 }}
+                                        <input type="checkbox" :value="student.id" v-model="selectedStudents" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 shadow-sm cursor-pointer">
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-medium text-gray-900">{{ student.nisn }}</div>
@@ -328,6 +371,47 @@ const onSearch = () => {
                         <SecondaryButton @click="closeModals">Batal</SecondaryButton>
                         <PrimaryButton :class="{ 'opacity-25': importForm.processing }" :disabled="importForm.processing || !importForm.file" class="bg-green-600 hover:bg-green-700">
                             {{ importForm.processing ? 'Memproses...' : 'Mulai Import' }}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </div>
+        </Modal>
+
+        <!-- Bulk Update Modal -->
+        <Modal :show="isBulkUpdateModalOpen" @close="closeModals">
+            <div class="bg-gradient-to-b from-indigo-50/50 to-white px-6 py-5 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-[#1a237e] flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    Pindah/Naik Kelas Massal
+                </h2>
+            </div>
+            <div class="p-6 sm:p-8">
+                <div class="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-yellow-800">
+                    <p class="font-bold mb-1">Perhatian:</p>
+                    <p>Anda akan memindahkan <strong>{{ selectedStudents.length }}</strong> siswa yang dipilih secara bersamaan. Silakan pilih kelas tujuan baru di bawah ini.</p>
+                </div>
+
+                <form @submit.prevent="submitBulkUpdate">
+                    <div class="mb-6">
+                        <InputLabel for="bulk_classroom_id" value="Pilih Kelas Tujuan" />
+                        <select 
+                            id="bulk_classroom_id" 
+                            v-model="bulkUpdateForm.classroom_id" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            required
+                        >
+                            <option value="" disabled>Pilih Kelas Tujuan...</option>
+                            <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
+                                {{ classroom.level }} - {{ classroom.name }} ({{ classroom.major?.code }})
+                            </option>
+                        </select>
+                        <InputError :message="bulkUpdateForm.errors.classroom_id" class="mt-2" />
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                        <SecondaryButton @click="closeModals">Batal</SecondaryButton>
+                        <PrimaryButton :class="{ 'opacity-25': bulkUpdateForm.processing }" :disabled="bulkUpdateForm.processing" class="bg-indigo-600 hover:bg-indigo-700">
+                            {{ bulkUpdateForm.processing ? 'Memproses...' : 'Pindahkan Siswa' }}
                         </PrimaryButton>
                     </div>
                 </form>

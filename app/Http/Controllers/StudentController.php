@@ -144,4 +144,18 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Gagal membaca file Excel. ' . SimpleXLSX::parseError());
         }
     }
+    public function bulkUpdateClass(Request $request)
+    {
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+            'classroom_id' => 'required|exists:classrooms,id',
+        ]);
+
+        Student::whereIn('id', $request->student_ids)->update([
+            'classroom_id' => $request->classroom_id
+        ]);
+
+        return redirect()->back()->with('success', count($request->student_ids) . ' siswa berhasil dipindahkan kelasnya.');
+    }
 }
