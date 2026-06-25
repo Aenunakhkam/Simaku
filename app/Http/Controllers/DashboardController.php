@@ -20,13 +20,10 @@ class DashboardController extends Controller
         $totalExpense = Expense::sum('amount');
         $totalKas = $totalIncome - $totalExpense;
 
-        // 2. Pemasukan Bulan Ini (Khusus Tahun Ajaran Aktif)
-        $incomeThisMonth = Payment::whereHas('paymentDetails.billing', function ($query) use ($academicYearId) {
-            $query->where('academic_year_id', $academicYearId);
-        })
-        ->whereMonth('date', now()->month)
-        ->whereYear('date', now()->year)
-        ->sum('total_amount');
+        // 2. Pemasukan Bulan Ini (Global)
+        $incomeThisMonth = Payment::whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->sum('total_amount');
 
         // 3. Pengeluaran Bulan Ini (Global)
         $expenseThisMonth = Expense::whereMonth('date', now()->month)
