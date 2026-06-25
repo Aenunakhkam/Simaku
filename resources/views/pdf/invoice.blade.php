@@ -7,23 +7,23 @@
         /* Base styles */
         body {
             font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
-            font-size: 11px;
+            font-size: 10px; /* Reduced from 11px */
             color: #333333;
             margin: 0;
-            padding: 10px 20px;
+            padding: 5px 10px; /* Tighter padding */
         }
 
         /* Colors */
-        .text-primary { color: #1e3a8a; } /* Deep blue for premium institutional look */
+        .text-primary { color: #1e3a8a; } 
         .bg-primary { background-color: #1e3a8a; color: #ffffff; }
         .text-muted { color: #64748b; }
         
         /* Typography */
         h1, h2, h3, p { margin: 0; padding: 0; }
         .font-bold { font-weight: bold; }
-        .text-sm { font-size: 9px; }
-        .text-lg { font-size: 14px; }
-        .text-xl { font-size: 18px; }
+        .text-sm { font-size: 8px; }
+        .text-lg { font-size: 12px; }
+        .text-xl { font-size: 16px; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         
@@ -34,47 +34,47 @@
         .header-table {
             width: 100%;
             border-bottom: 2px solid #1e3a8a;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
         }
         .header-table td { vertical-align: middle; }
-        .logo-cell { width: 70px; text-align: left; }
-        .logo-cell img { width: 60px; height: auto; }
+        .logo-cell { width: 60px; text-align: left; }
+        .logo-cell img { width: 45px; height: auto; }
         .company-info h1 {
             color: #1e3a8a;
-            font-size: 18px;
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .company-info p {
             color: #475569;
-            font-size: 10px;
-            line-height: 1.3;
+            font-size: 9px;
+            line-height: 1.1;
         }
         
         /* Document Title */
         .doc-title-table {
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         .doc-title {
-            font-size: 20px;
+            font-size: 16px;
             color: #1e3a8a;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
         .invoice-meta {
             text-align: right;
-            font-size: 10px;
+            font-size: 9px;
             color: #475569;
         }
 
         /* Info Section */
         .info-table {
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             border-collapse: collapse;
         }
         .info-table td {
@@ -84,17 +84,16 @@
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
-            padding: 8px 12px;
+            padding: 4px 8px;
         }
         .info-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .info-value {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             color: #1e293b;
         }
@@ -103,24 +102,24 @@
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         .items-table th {
             background-color: #1e3a8a;
             color: #ffffff;
-            padding: 8px;
-            font-size: 10px;
+            padding: 4px;
+            font-size: 9px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             text-align: left;
             border: 1px solid #1e3a8a;
         }
         .items-table td {
-            padding: 8px;
+            padding: 4px;
             border-bottom: 1px solid #e2e8f0;
             border-left: 1px solid #e2e8f0;
             border-right: 1px solid #e2e8f0;
             color: #334155;
+            font-size: 9px;
         }
         .items-table tr:nth-child(even) td {
             background-color: #f8fafc;
@@ -134,23 +133,23 @@
             font-weight: bold;
             color: #1e3a8a;
             border-top: 2px solid #1e3a8a;
-            font-size: 12px;
+            font-size: 10px;
         }
 
         /* Terbilang */
         .terbilang-box {
             background-color: #f0fdf4;
             border-left: 3px solid #16a34a;
-            padding: 8px 12px;
-            margin-bottom: 15px;
-            font-size: 10px;
+            padding: 4px 8px;
+            margin-bottom: 5px;
+            font-size: 9px;
             color: #166534;
         }
 
         /* Signatures */
         .signature-table {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         .signature-table td {
             width: 33.33%;
@@ -159,8 +158,8 @@
         }
         .signature-title {
             color: #64748b;
-            font-size: 10px;
-            margin-bottom: 40px;
+            font-size: 9px;
+            margin-bottom: 25px; /* Reduced space for signature */
         }
         .signature-name {
             font-weight: bold;
@@ -168,22 +167,22 @@
             border-bottom: 1px solid #cbd5e1;
             display: inline-block;
             padding-bottom: 2px;
-            min-width: 120px;
+            font-size: 10px;
         }
         .signature-role {
-            font-size: 9px;
+            font-size: 8px;
             color: #64748b;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         /* Footer */
         .footer {
-            margin-top: 15px;
+            margin-top: 5px;
             text-align: center;
-            font-size: 8px;
+            font-size: 7px;
             color: #94a3b8;
             border-top: 1px solid #e2e8f0;
-            padding-top: 8px;
+            padding-top: 4px;
         }
 
         @php
@@ -250,28 +249,23 @@
             <td style="width: 48%;">
                 <div class="info-box">
                     <div class="info-label">Diterima Dari (Data Siswa)</div>
-                    <div class="info-value" style="font-size: 13px; margin-bottom: 4px; color: #1e3a8a;">
+                    <div class="info-value" style="font-size: 11px; margin-bottom: 2px; color: #1e3a8a;">
                         {{ $payment->student->name }}
                     </div>
-                    <div class="info-value" style="font-weight: normal; color: #475569;">
-                        NIS/NISN: {{ $payment->student->nis ?? '-' }}<br>
-                        Kelas: {{ $payment->student->classroom ? $payment->student->classroom->level . ' ' . $payment->student->classroom->name : 'Belum Ada Kelas' }}
+                    <div class="info-value" style="font-weight: normal; color: #475569; font-size: 9px;">
+                        NIS: {{ $payment->student->nis ?? '-' }} | Kelas: {{ $payment->student->classroom ? $payment->student->classroom->level . ' ' . $payment->student->classroom->name : 'Belum Ada Kelas' }}
                     </div>
                 </div>
             </td>
-            <td style="width: 4%;"></td> <!-- Spacer -->
+            <td style="width: 4%;"></td>
             <td style="width: 48%;">
-                <div class="info-box" style="height: 100%;">
+                <div class="info-box">
                     <div class="info-label">Informasi Transaksi</div>
-                    <div class="info-value" style="font-weight: normal; color: #475569; padding-top: 4px;">
-                        <table style="width: 100%; font-size: 11px;">
+                    <div class="info-value" style="font-weight: normal; color: #475569; font-size: 9px;">
+                        <table style="width: 100%; font-size: 9px;">
                             <tr>
-                                <td style="width: 40%; padding-bottom: 3px;">Status</td>
-                                <td style="width: 60%; font-weight: bold; color: #16a34a;">: LUNAS</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-bottom: 3px;">Metode</td>
-                                <td>: Tunai / Transfer</td>
+                                <td style="width: 30%;">Status</td>
+                                <td style="width: 70%; font-weight: bold; color: #16a34a;">: LUNAS</td>
                             </tr>
                             <tr>
                                 <td>Penerima</td>
@@ -289,8 +283,8 @@
         <thead>
             <tr>
                 <th width="5%" class="text-center">NO</th>
-                <th width="35%">RINCIAN PEMBAYARAN</th>
-                <th width="35%">KETERANGAN / PERIODE</th>
+                <th width="40%">RINCIAN PEMBAYARAN</th>
+                <th width="30%">PERIODE</th>
                 <th width="25%" class="text-right">JUMLAH (Rp)</th>
             </tr>
         </thead>
@@ -313,7 +307,7 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-right" style="padding-right: 15px;">TOTAL PEMBAYARAN</td>
-                <td class="text-right" style="font-size: 14px;">
+                <td class="text-right" style="font-size: 11px;">
                     Rp {{ number_format($payment->total_amount, 0, ',', '.') }}
                 </td>
             </tr>
@@ -334,23 +328,21 @@
                 <div class="signature-role">Penyetor</div>
             </td>
             <td>
-                <!-- Center column can be empty or used for stamp -->
-                <div style="color: #cbd5e1; font-size: 10px; margin-top: 20px; border: 1px dashed #cbd5e1; display: inline-block; padding: 10px 20px; border-radius: 5px; opacity: 0.5;">
-                    CAP INSTANSI / LUNAS
+                <div style="color: #cbd5e1; font-size: 10px; border: 1px dashed #cbd5e1; display: inline-block; padding: 5px 10px; border-radius: 5px; opacity: 0.5;">
+                    LUNAS
                 </div>
             </td>
             <td>
-                <div class="signature-title">Kota Cendekia, {{ date('d F Y', strtotime($payment->date)) }}<br>Penerima / Kasir,</div>
-                <div class="signature-name">{{ $payment->user ? $payment->user->name : 'Administrator' }}</div>
-                <div class="signature-role">Bag. Keuangan SIMAKU</div>
+                <div class="signature-title">Kota Cendekia, {{ date('d M Y', strtotime($payment->date)) }}<br>Penerima,</div>
+                <div class="signature-name">{{ $payment->user ? $payment->user->name : 'Admin' }}</div>
+                <div class="signature-role">Keuangan</div>
             </td>
         </tr>
     </table>
 
     <!-- Footer -->
     <div class="footer">
-        Dokumen ini diterbitkan secara sah oleh Sistem Manajemen Keuangan (SIMAKU) YP. SIMAKU.<br>
-        Dicetak otomatis pada {{ date('d/m/Y H:i:s') }}. Transparansi dan Akuntabilitas adalah Komitmen Kami.
+        Dokumen ini diterbitkan oleh SIMAKU. Dicetak otomatis pada {{ date('d/m/Y H:i') }}.
     </div>
 
 </body>
