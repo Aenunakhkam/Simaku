@@ -5,12 +5,15 @@
     <title>Invoice - {{ $payment->invoice_number }}</title>
     <style>
         /* Base styles */
+        @page {
+            margin: 15px; /* VERY IMPORTANT: Reduces DomPDF default page margin */
+        }
         body {
             font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
-            font-size: 9px; 
+            font-size: 8px; 
             color: #000;
             margin: 0;
-            padding: 5px; /* Tighter padding */
+            padding: 0;
         }
 
         /* Typography */
@@ -25,30 +28,30 @@
         /* Header */
         .header-table {
             width: 100%;
-            border-bottom: 2px solid #000;
-            padding-bottom: 4px;
-            margin-bottom: 4px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
             text-align: center;
         }
         .company-info h1 {
             color: #000;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .company-info p {
             color: #000;
-            font-size: 9px;
+            font-size: 7px;
         }
         
         /* Document Title */
         .doc-title-table {
             width: 100%;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .doc-title {
-            font-size: 13px;
+            font-size: 11px;
             color: #000;
             font-weight: bold;
             text-transform: uppercase;
@@ -56,14 +59,14 @@
         }
         .invoice-meta {
             text-align: right;
-            font-size: 8px;
+            font-size: 7px;
             color: #000;
         }
 
         /* Info Section */
         .info-table {
             width: 100%;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             border-collapse: collapse;
         }
         .info-table td {
@@ -71,41 +74,44 @@
         }
         .info-box {
             border: 1px solid #000;
-            padding: 3px 6px;
+            padding: 2px 4px;
         }
         .info-label {
-            font-size: 7px;
+            font-size: 6px;
             color: #000;
             text-transform: uppercase;
             border-bottom: 1px solid #000;
             padding-bottom: 1px;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .info-value {
-            font-size: 9px;
+            font-size: 7px;
             color: #000;
+        }
+        .info-value strong {
+            font-size: 8px;
         }
 
         /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .items-table th {
             background-color: #f2f2f2;
             color: #000;
-            padding: 3px;
-            font-size: 8px;
+            padding: 2px;
+            font-size: 7px;
             text-transform: uppercase;
             text-align: left;
             border: 1px solid #000;
         }
         .items-table td {
-            padding: 3px;
+            padding: 2px;
             border: 1px solid #000;
             color: #000;
-            font-size: 8px;
+            font-size: 7px;
         }
         .items-table th.text-center, .items-table td.text-center { text-align: center; }
         .items-table th.text-right, .items-table td.text-right { text-align: right; }
@@ -115,15 +121,15 @@
             background-color: #e6e6e6;
             font-weight: bold;
             color: #000;
-            font-size: 9px;
+            font-size: 8px;
         }
 
         /* Terbilang */
         .terbilang-box {
             border: 1px solid #000;
-            padding: 3px 6px;
-            margin-bottom: 4px;
-            font-size: 8px;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            font-size: 7px;
             color: #000;
             background-color: #f9f9f9;
         }
@@ -131,7 +137,7 @@
         /* Signatures */
         .signature-table {
             width: 100%;
-            margin-top: 4px;
+            margin-top: 2px;
         }
         .signature-table td {
             width: 33.33%;
@@ -140,8 +146,8 @@
         }
         .signature-title {
             color: #000;
-            font-size: 8px;
-            margin-bottom: 30px; /* space for signature */
+            font-size: 7px;
+            margin-bottom: 20px; /* space for signature */
         }
         .signature-name {
             font-weight: bold;
@@ -149,22 +155,22 @@
             border-bottom: 1px solid #000;
             display: inline-block;
             padding-bottom: 1px;
-            font-size: 9px;
+            font-size: 8px;
         }
         .signature-role {
-            font-size: 7px;
+            font-size: 6px;
             color: #000;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         /* Footer */
         .footer {
-            margin-top: 4px;
+            margin-top: 2px;
             text-align: center;
-            font-size: 7px;
+            font-size: 6px;
             color: #000;
             border-top: 1px dashed #000;
-            padding-top: 3px;
+            padding-top: 1px;
         }
 
         @php
@@ -238,7 +244,7 @@
                 <div class="info-box">
                     <div class="info-label">Informasi Transaksi</div>
                     <div class="info-value">
-                        <table style="width: 100%; font-size: 8px;">
+                        <table style="width: 100%; font-size: 7px;">
                             <tr>
                                 <td style="width: 30%;">Status</td>
                                 <td style="width: 70%;">: <strong>LUNAS</strong></td>
@@ -283,7 +289,7 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="3" class="text-right" style="padding-right: 10px;">TOTAL PEMBAYARAN</td>
-                <td class="text-right" style="font-size: 10px;">
+                <td class="text-right" style="font-size: 8px;">
                     Rp {{ number_format($payment->total_amount, 0, ',', '.') }}
                 </td>
             </tr>
@@ -304,7 +310,7 @@
                 <div class="signature-role">Penyetor</div>
             </td>
             <td>
-                <div style="font-size: 10px; border: 1px dashed #000; display: inline-block; padding: 3px 8px; border-radius: 3px; color: #000;">
+                <div style="font-size: 8px; border: 1px dashed #000; display: inline-block; padding: 2px 6px; border-radius: 3px; color: #000;">
                     LUNAS
                 </div>
             </td>
