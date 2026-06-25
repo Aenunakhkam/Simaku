@@ -5,12 +5,12 @@
     <title>Cetak Massal Slip Tagihan</title>
     <style>
         @page {
-            margin: 25px; /* give comfortable margin for A5 */
-            size: a5 landscape;
+            margin: 0;
+            size: a4 portrait;
         }
         body {
             font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
-            font-size: 11px;
+            font-size: 8.5px;
             color: #000;
             margin: 0;
             padding: 0;
@@ -18,50 +18,63 @@
         }
         .receipt-container {
             width: 100%;
+            height: 48.5%;
+            padding: 15px 25px;
             box-sizing: border-box;
-            page-break-after: always; /* Each student on a new A5 page */
+            position: relative;
+            overflow: hidden; /* Prevent overflow to next receipt */
         }
-        .receipt-container:last-child {
-            page-break-after: auto;
+        .cut-line {
+            width: 100%;
+            height: 0;
+            border-top: 1px dashed #888;
+            margin: 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        .page-break {
+            page-break-after: always;
         }
         
         .kop-surat {
             width: 100%;
-            border-bottom: 2px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+            border-bottom: 1.5px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
         }
         .kop-surat td.teks {
             text-align: center;
         }
-        .kop-surat h1 { margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase; }
-        .kop-surat p { margin: 2px 0 0 0; font-size: 10px; }
+        .kop-surat h1 { margin: 0; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .kop-surat p { margin: 0; font-size: 8px; }
         
-        .title { text-align: center; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
+        .title { text-align: center; margin-bottom: 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
         
-        .info-table { width: 100%; margin-bottom: 15px; font-size: 11px; }
-        .info-table td { vertical-align: top; padding: 2px 0; }
+        .info-table { width: 100%; margin-bottom: 5px; font-size: 8.5px; }
+        .info-table td { vertical-align: top; padding: 1px 0; }
         
-        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        .data-table th, .data-table td { border: 1px solid #000; padding: 5px; font-size: 10px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+        .data-table th, .data-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 8px; }
         .data-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; text-transform: uppercase; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
         
-        .summary-box { width: 45%; float: right; border: 1px solid #000; padding: 5px; font-size: 11px; }
+        .summary-box { width: 45%; float: right; border: 1px solid #000; padding: 3px; font-size: 8.5px; }
         .summary-box table { width: 100%; }
-        .summary-box td { padding: 3px; }
+        .summary-box td { padding: 1.5px; }
         
         .clear { clear: both; }
         
-        .footer-note { margin-top: 15px; font-size: 9px; font-style: italic; color: #555; text-align: center; }
+        .footer-note { margin-top: 5px; font-size: 7.5px; font-style: italic; color: #555; text-align: center; }
     </style>
 </head>
 <body>
     @php 
+        $counter = 0; 
         $totalStudents = count($students);
-        $months = [1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'];
+        $months = [1=>'Jan', 2=>'Feb', 3=>'Mar', 4=>'Apr', 5=>'Mei', 6=>'Jun', 7=>'Jul', 8=>'Agu', 9=>'Sep', 10=>'Okt', 11=>'Nov', 12=>'Des'];
     @endphp
     
     @foreach($students as $index => $student)
@@ -121,7 +134,7 @@
                     @forelse($student->billings as $bill)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $bill->category ? $bill->category->name : '-' }} {{ $bill->month ? '(Bulan '.$months[$bill->month].')' : '' }}</td>
+                        <td>{{ $bill->category ? $bill->category->name : '-' }} {{ $bill->month ? '(Bln '.$months[$bill->month].')' : '' }}</td>
                         <td class="text-right">{{ number_format($bill->amount, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($bill->paid_amount, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($bill->remaining_amount, 0, ',', '.') }}</td>
@@ -145,8 +158,8 @@
                         <td class="text-right font-bold" style="color: #28a745;">Rp {{ number_format($student->total_paid, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td style="border-top: 1px solid #000; padding-top: 5px;">Sisa Tagihan</td>
-                        <td class="text-right font-bold" style="color: #dc3545; border-top: 1px solid #000; padding-top: 5px;">Rp {{ number_format($student->remaining, 0, ',', '.') }}</td>
+                        <td style="border-top: 1px solid #000; padding-top: 2px;">Sisa Tagihan</td>
+                        <td class="text-right font-bold" style="color: #dc3545; border-top: 1px solid #000; padding-top: 2px;">Rp {{ number_format($student->remaining, 0, ',', '.') }}</td>
                     </tr>
                 </table>
             </div>
@@ -155,7 +168,17 @@
             <div class="footer-note">
                 Dicetak oleh Sistem Manajemen Keuangan (SIMAKU) pada {{ date('d/m/Y H:i:s') }}
             </div>
+
+            @if($counter % 2 == 0 && $index < $totalStudents - 1)
+                <div class="cut-line"></div>
+            @endif
         </div>
+        
+        @php $counter++; @endphp
+        
+        @if($counter % 2 == 0 && $index < $totalStudents - 1)
+            <div class="page-break"></div>
+        @endif
     @endforeach
     
     @if(count($students) == 0)
