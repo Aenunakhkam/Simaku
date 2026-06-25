@@ -35,9 +35,6 @@
 
     <table class="kop-surat">
         <tr>
-            <td class="logo">
-                <img src="{{ public_path('favicon.png') }}" style="width: 80px;">
-            </td>
             <td class="teks">
                 <h1>SMK HASYIM ASYARI BOJONG</h1>
                 <p>JL.Babakan Tuwel Bojong Tegal 52465</p>

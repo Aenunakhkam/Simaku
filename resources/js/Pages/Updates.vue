@@ -1,13 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     appUpdates: Array,
     remoteCommits: Array,
     newCommitsCount: Number,
-    lastFetch: String
+    lastFetch: String,
+    filters: Object
 });
 
 const activeTab = ref('aplikasi');
@@ -24,6 +25,14 @@ const pullUpdates = () => {
         }
     });
 };
+
+const perPage = ref(props.filters?.per_page || 10);
+watch(perPage, (value) => {
+    router.get(route('updates'), { per_page: value }, {
+        preserveState: true,
+        replace: true
+    });
+});
 </script>
 
 <template>
@@ -126,6 +135,20 @@ const pullUpdates = () => {
                                 <h4 class="font-bold">Aplikasi Anda Sudah Versi Terbaru!</h4>
                                 <p class="text-sm opacity-90 mt-0.5">Tidak ada kode pembaruan baru dari repositori Github saat ini.</p>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 py-4 flex items-center justify-between border-b border-gray-200 bg-white">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-500 font-medium">Tampilkan</span>
+                            <select v-model="perPage" class="border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-1.5 pl-3 pr-8">
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span class="text-sm text-gray-500 font-medium">baris</span>
                         </div>
                     </div>
                     

@@ -29,15 +29,18 @@ class UpdateController extends Controller
         return $commits;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         // Jalankan fetch untuk memastikan kita mendapat status remote terbaru
         exec("cd " . escapeshellarg(base_path()) . " && git fetch origin main 2>&1", $fetchOutput, $fetchStatus);
 
         $gitFormat = '--pretty=format:"%H|%cd|%s|%an" --date=format:"%d/%m/%Y, %H.%M.%S"';
         
+        $perPage = $request->input('per_page', 10);
+        $limit = $perPage === 'all' ? '' : "-n " . (int)$perPage;
+        
         // Commits jarak jauh (yang ada di Github)
-        $remoteCommits = $this->parseGitLog("git log -n 50 {$gitFormat} origin/main");
+        $remoteCommits = $this->parseGitLog("git log {$limit} {$gitFormat} origin/main");
 
         // Cek jumlah pembaruan baru yang belum ditarik
         exec("cd " . escapeshellarg(base_path()) . " && git rev-list --count HEAD..origin/main 2>&1", $countOutput, $countReturn);
@@ -77,7 +80,8 @@ class UpdateController extends Controller
             'appUpdates' => $appUpdates,
             'remoteCommits' => $remoteCommits,
             'newCommitsCount' => $newCommitsCount,
-            'lastFetch' => $lastFetch
+            'lastFetch' => $lastFetch,
+            'filters' => ['per_page' => $perPage]
         ]);
     }
 
