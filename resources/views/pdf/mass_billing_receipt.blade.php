@@ -18,15 +18,15 @@
         }
         .receipt-container {
             width: 100%;
-            height: 48%; /* Beri ruang 48% agar pas 2 kuitansi di satu halaman */
+            height: 380px; /* Gunakan pixel pasti (A4 tinggi ~842px, dikurangi margin 40px = ~800px. Setengahnya 400px. Kita pakai 380px agar sangat aman dari page break otomatis) */
             box-sizing: border-box;
             position: relative;
-            overflow: hidden; /* Mencegah tumpah ke kuitansi di bawahnya */
         }
         .cut-line-wrapper {
             width: 100%;
-            height: 4%; /* Ruang 4% untuk garis potong */
-            display: table;
+            height: 20px;
+            display: block;
+            text-align: center;
         }
         .cut-line {
             border-top: 1px dashed #888;
