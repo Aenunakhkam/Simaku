@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Laporan Keuangan Siswa - {{ $student->name }}</title>
     <style>
-        body { font-family: 'Times New Roman', Times, serif; font-size: 12px; margin: 20px; color: #000; }
+        @page { margin: 20px; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12px; margin: 0; color: #000; }
         .kop-surat { width: 100%; border-bottom: 4px double #000; padding-bottom: 10px; margin-bottom: 20px; }
         .kop-surat td { border: none; padding: 0; }
         .kop-surat .logo { width: 80px; text-align: left; }
@@ -42,10 +43,8 @@
                 <img src="{{ public_path('favicon.png') }}" style="width: 80px;">
             </td>
             <td class="teks">
-                <h1>YAYASAN PENDIDIKAN SIMAKU</h1>
-                <h2>SMK / SMA SIMAKU</h2>
-                <p>Jl. Pendidikan No. 123, Telp. (021) 1234567, Email: info@simaku.sch.id</p>
-                <p>Website: www.simaku.sch.id</p>
+                <h1>SMK HASYIM ASYARI BOJONG</h1>
+                <p>JL.Babakan Tuwel Bojong Tegal 52465</p>
             </td>
         </tr>
     </table>
