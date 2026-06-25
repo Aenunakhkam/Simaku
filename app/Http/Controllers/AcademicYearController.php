@@ -13,7 +13,7 @@ class AcademicYearController extends Controller
         $query = AcademicYear::latest();
 
         if ($request->search) {
-            $query->where('name', 'like', "%{$request->search}%");
+            $query->where('name', 'ilike', "%{$request->search}%");
         }
 
         $academicYears = $query->paginate($request->per_page ?? 10)->withQueryString();

@@ -16,8 +16,8 @@ class MajorController extends Controller
         $query = Major::latest();
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('code', 'ilike', "%{$search}%");
         }
 
         if ($perPage === 'all') {

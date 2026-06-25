@@ -16,10 +16,10 @@ class ClassroomController extends Controller
 
         $query = Classroom::with('major')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query->where('name', 'ilike', "%{$search}%")
                       ->orWhereHas('major', function ($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%")
-                            ->orWhere('code', 'like', "%{$search}%");
+                        $q->where('name', 'ilike', "%{$search}%")
+                            ->orWhere('code', 'ilike', "%{$search}%");
                       });
             })
             ->orderBy('level')

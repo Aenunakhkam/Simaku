@@ -19,9 +19,9 @@ class StudentController extends Controller
         $query = Student::with('classroom.major')->latest();
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('nisn', 'ilike', "%{$search}%")
+                  ->orWhere('nis', 'ilike', "%{$search}%");
         }
 
         if ($perPage === 'all') {

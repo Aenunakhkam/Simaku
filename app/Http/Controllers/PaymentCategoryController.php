@@ -16,8 +16,8 @@ class PaymentCategoryController extends Controller
         $query = PaymentCategory::latest();
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('type', 'ilike', "%{$search}%");
         }
 
         if ($perPage === 'all') {

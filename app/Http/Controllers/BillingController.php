@@ -21,8 +21,8 @@ class BillingController extends Controller
         if ($request->search) {
             $query->whereHas('student', function($q) use ($request) {
                 $q->where(function($sq) use ($request) {
-                    $sq->where('name', 'like', "%{$request->search}%")
-                       ->orWhere('nisn', 'like', "%{$request->search}%");
+                    $sq->where('name', 'ilike', "%{$request->search}%")
+                       ->orWhere('nisn', 'ilike', "%{$request->search}%");
                 });
             });
         }

@@ -17,8 +17,8 @@ class ExpenseController extends Controller
 
         $query = Expense::with(['category', 'user'])
             ->when($request->search, function ($query, $search) {
-                $query->where('voucher_number', 'like', "%{$search}%")
-                      ->orWhere('note', 'like', "%{$search}%");
+                $query->where('voucher_number', 'ilike', "%{$search}%")
+                      ->orWhere('note', 'ilike', "%{$search}%");
             })
             ->when($request->date_start && $request->date_end, function ($query) use ($request) {
                 $query->whereBetween('date', [$request->date_start, $request->date_end]);

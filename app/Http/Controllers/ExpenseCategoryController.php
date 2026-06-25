@@ -16,7 +16,7 @@ class ExpenseCategoryController extends Controller
         $query = ExpenseCategory::latest();
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%");
         }
 
         if ($perPage === 'all') {
