@@ -13,7 +13,18 @@ class BillingMonitoringController extends Controller
     {
         $academicYearId = session('academic_year_id');
         
-        $query = Student::with(['classroom', 'classroom.major'])
+        $query = Student::with([
+            'classroom', 
+            'classroom.major',
+            'billings' => function($q) use ($academicYearId) {
+                $q->where('academic_year_id', $academicYearId)->with(['category', 'academicYear']);
+            },
+            'payments' => function($q) use ($academicYearId) {
+                $q->whereHas('paymentDetails.billing', function($sub) use ($academicYearId) {
+                    $sub->where('academic_year_id', $academicYearId);
+                })->with(['paymentDetails.billing.category', 'user'])->latest('id');
+            }
+        ])
             ->withSum(['billings' => function($q) use ($academicYearId) {
                 $q->where('academic_year_id', $academicYearId);
             }], 'amount')
@@ -30,6 +41,21 @@ class BillingMonitoringController extends Controller
         if ($request->filled('search')) {
             $query->where('name', 'ilike', '%' . $request->search . '%')
                   ->orWhere('nisn', 'ilike', '%' . $request->search . '%');
+        }
+
+        // Filter by payment status
+        if ($request->filled('status')) {
+            $status = $request->status;
+            $billingSumSql = '(SELECT COALESCE(SUM(amount), 0) FROM billings WHERE billings.student_id = students.id AND billings.academic_year_id = ?)';
+            $paymentSumSql = '(SELECT COALESCE(SUM(pd.amount), 0) FROM payment_details pd INNER JOIN billings b ON pd.billing_id = b.id WHERE b.student_id = students.id AND b.academic_year_id = ?)';
+            
+            if ($status === 'lunas') {
+                $query->whereRaw("{$billingSumSql} = 0 OR {$paymentSumSql} >= {$billingSumSql}", [$academicYearId, $academicYearId, $academicYearId]);
+            } elseif ($status === 'belum_lunas') { // nyicil
+                $query->whereRaw("{$paymentSumSql} > 0 AND {$paymentSumSql} < {$billingSumSql}", [$academicYearId, $academicYearId, $academicYearId]);
+            } elseif ($status === 'belum_bayar') {
+                $query->whereRaw("{$billingSumSql} > 0 AND {$paymentSumSql} = 0", [$academicYearId, $academicYearId]);
+            }
         }
 
         // Fetch all raw to calculate the statuses for the cards (in a real big app this might need raw SQL grouping, but for school app it's fine)
@@ -110,7 +136,7 @@ class BillingMonitoringController extends Controller
             'students' => $students,
             'stats' => $stats,
             'classrooms' => Classroom::with('major')->get(),
-            'filters' => $request->only(['search', 'classroom_id', 'per_page'])
+            'filters' => $request->only(['search', 'classroom_id', 'per_page', 'status'])
         ]);
     }
 }

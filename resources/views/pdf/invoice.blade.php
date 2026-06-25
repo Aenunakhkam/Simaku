@@ -228,6 +228,18 @@
     </table>
 
     <!-- Info Section (Billed To) -->
+    @php
+        $allPaid = true;
+        foreach($payment->paymentDetails as $detail) {
+            $paidUpToNow = \App\Models\PaymentDetail::where('billing_id', $detail->billing_id)
+                ->where('payment_id', '<=', $payment->id)
+                ->sum('amount');
+            $remainingUpToNow = max(0, $detail->billing->amount - $paidUpToNow);
+            if ($remainingUpToNow > 0) {
+                $allPaid = false;
+            }
+        }
+    @endphp
     <table class="info-table">
         <tr>
             <td style="width: 49%;">
@@ -247,7 +259,7 @@
                         <table style="width: 100%; font-size: 7px;">
                             <tr>
                                 <td style="width: 30%;">Status</td>
-                                <td style="width: 70%;">: <strong>LUNAS</strong></td>
+                                <td style="width: 70%;">: <strong>{{ $allPaid ? 'LUNAS' : 'BELUM LUNAS (CICILAN)' }}</strong></td>
                             </tr>
                             <tr>
                                 <td>Penerima</td>
@@ -265,14 +277,22 @@
         <thead>
             <tr>
                 <th width="5%" class="text-center">NO</th>
-                <th width="40%">RINCIAN PEMBAYARAN</th>
-                <th width="30%">PERIODE</th>
-                <th width="25%" class="text-right">JUMLAH (Rp)</th>
+                <th width="35%">RINCIAN PEMBAYARAN</th>
+                <th width="20%">PERIODE</th>
+                <th width="13%" class="text-right">TOTAL TAGIHAN (Rp)</th>
+                <th width="13%" class="text-right">DIBAYAR (Rp)</th>
+                <th width="14%" class="text-right">SISA TAGIHAN (Rp)</th>
             </tr>
         </thead>
         <tbody>
             @php $no = 1; @endphp
             @foreach($payment->paymentDetails as $detail)
+            @php
+                $paidUpToNow = \App\Models\PaymentDetail::where('billing_id', $detail->billing_id)
+                    ->where('payment_id', '<=', $payment->id)
+                    ->sum('amount');
+                $remainingUpToNow = max(0, $detail->billing->amount - $paidUpToNow);
+            @endphp
             <tr>
                 <td class="text-center">{{ $no++ }}</td>
                 <td class="font-bold">{{ $detail->billing->category->name }}</td>
@@ -280,18 +300,25 @@
                     T.A {{ $detail->billing->academicYear->name }}
                     {{ $detail->billing->month ? ' (Bulan ' . $months[$detail->billing->month] . ')' : '' }}
                 </td>
+                <td class="text-right">
+                    {{ number_format($detail->billing->amount, 0, ',', '.') }}
+                </td>
                 <td class="text-right font-bold">
                     {{ number_format($detail->amount, 0, ',', '.') }}
+                </td>
+                <td class="text-right font-bold" style="{{ $remainingUpToNow > 0 ? 'color: #dc3545;' : 'color: #28a745;' }}">
+                    {{ $remainingUpToNow <= 0 ? 'LUNAS' : number_format($remainingUpToNow, 0, ',', '.') }}
                 </td>
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr class="total-row">
-                <td colspan="3" class="text-right" style="padding-right: 10px;">TOTAL PEMBAYARAN</td>
+                <td colspan="4" class="text-right" style="padding-right: 10px;">TOTAL TRANSAKSI INI</td>
                 <td class="text-right" style="font-size: 8px;">
                     Rp {{ number_format($payment->total_amount, 0, ',', '.') }}
                 </td>
+                <td></td>
             </tr>
         </tfoot>
     </table>
@@ -310,8 +337,8 @@
                 <div class="signature-role">Penyetor</div>
             </td>
             <td>
-                <div style="font-size: 8px; border: 1px dashed #000; display: inline-block; padding: 2px 6px; border-radius: 3px; color: #000;">
-                    LUNAS
+                <div style="font-size: 8px; border: 1px dashed {{ $allPaid ? '#28a745' : '#dc3545' }}; display: inline-block; padding: 2px 6px; border-radius: 3px; color: {{ $allPaid ? '#28a745' : '#dc3545' }}; font-weight: bold; text-transform: uppercase;">
+                    {{ $allPaid ? 'LUNAS' : 'BELUM LUNAS' }}
                 </div>
             </td>
             <td>
