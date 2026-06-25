@@ -216,7 +216,7 @@ class BillingMonitoringController extends Controller
         });
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.mass_billing_receipt', compact('students'))
-            ->setPaper('a4', 'portrait');
+            ->setPaper('a5', 'landscape');
         
         return $pdf->stream("cetak_massal_slip_tagihan.pdf");
     }

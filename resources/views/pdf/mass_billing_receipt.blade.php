@@ -5,8 +5,8 @@
     <title>Cetak Massal Slip Tagihan</title>
     <style>
         @page {
-            margin: 0; /* no margin, handled by container */
-            size: A4 portrait;
+            margin: 25px; /* give comfortable margin for A5 */
+            size: a5 landscape;
         }
         body {
             font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
@@ -18,22 +18,11 @@
         }
         .receipt-container {
             width: 100%;
-            height: 48.5%;
-            padding: 25px 30px;
             box-sizing: border-box;
-            position: relative;
+            page-break-after: always; /* Each student on a new A5 page */
         }
-        .cut-line {
-            width: 100%;
-            height: 0;
-            border-top: 1px dashed #888;
-            margin: 0;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-        }
-        .page-break {
-            page-break-after: always;
+        .receipt-container:last-child {
+            page-break-after: auto;
         }
         
         .kop-surat {
@@ -71,7 +60,6 @@
 </head>
 <body>
     @php 
-        $counter = 0; 
         $totalStudents = count($students);
         $months = [1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'];
     @endphp
@@ -167,17 +155,7 @@
             <div class="footer-note">
                 Dicetak oleh Sistem Manajemen Keuangan (SIMAKU) pada {{ date('d/m/Y H:i:s') }}
             </div>
-
-            @if($counter % 2 == 0 && $index < $totalStudents - 1)
-                <div class="cut-line"></div>
-            @endif
         </div>
-        
-        @php $counter++; @endphp
-        
-        @if($counter % 2 == 0 && $index < $totalStudents - 1)
-            <div class="page-break"></div>
-        @endif
     @endforeach
     
     @if(count($students) == 0)
