@@ -5,7 +5,7 @@
     <title>Cetak Massal Slip Tagihan</title>
     <style>
         @page {
-            margin: 0;
+            margin: 20px; /* Gunakan margin halaman yang aman */
             size: a4 portrait;
         }
         body {
@@ -18,20 +18,19 @@
         }
         .receipt-container {
             width: 100%;
-            height: 48.5%;
-            padding: 15px 25px;
+            height: 48%; /* Beri ruang 48% agar pas 2 kuitansi di satu halaman */
             box-sizing: border-box;
             position: relative;
-            overflow: hidden; /* Prevent overflow to next receipt */
+            overflow: hidden; /* Mencegah tumpah ke kuitansi di bawahnya */
+        }
+        .cut-line-wrapper {
+            width: 100%;
+            height: 4%; /* Ruang 4% untuk garis potong */
+            display: table;
         }
         .cut-line {
-            width: 100%;
-            height: 0;
             border-top: 1px dashed #888;
-            margin: 0;
-            position: absolute;
-            bottom: 0;
-            left: 0;
+            margin-top: 10px;
         }
         .page-break {
             page-break-after: always;
@@ -54,8 +53,8 @@
         .info-table { width: 100%; margin-bottom: 5px; font-size: 8.5px; }
         .info-table td { vertical-align: top; padding: 1px 0; }
         
-        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-        .data-table th, .data-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 8px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; table-layout: fixed; }
+        .data-table th, .data-table td { border: 1px solid #000; padding: 2.5px 4px; font-size: 8px; word-wrap: break-word; }
         .data-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; text-transform: uppercase; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -168,13 +167,15 @@
             <div class="footer-note">
                 Dicetak oleh Sistem Manajemen Keuangan (SIMAKU) pada {{ date('d/m/Y H:i:s') }}
             </div>
-
-            @if($counter % 2 == 0 && $index < $totalStudents - 1)
-                <div class="cut-line"></div>
-            @endif
         </div>
         
         @php $counter++; @endphp
+        
+        @if($counter % 2 != 0 && $index < $totalStudents - 1)
+            <div class="cut-line-wrapper">
+                <div class="cut-line"></div>
+            </div>
+        @endif
         
         @if($counter % 2 == 0 && $index < $totalStudents - 1)
             <div class="page-break"></div>
