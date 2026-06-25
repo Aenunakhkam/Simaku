@@ -25,6 +25,7 @@ const isCreateModalOpen = ref(false);
 const form = useForm({
     target_type: 'classroom',
     target_id: '',
+    target_student_ids: [],
     payment_category_ids: [],
     academic_year_id: page.props.active_academic_year ? page.props.active_academic_year.id : '',
     month: '',
@@ -232,14 +233,17 @@ const onSearch = () => {
                     </div>
 
                     <div class="mb-4" v-if="form.target_type === 'student'">
-                        <InputLabel value="Pilih Siswa" />
-                        <select v-model="form.target_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                            <option value="">-- Pilih Siswa --</option>
-                            <option v-for="student in students" :key="student.id" :value="student.id">
-                                {{ student.nisn }} - {{ student.name }} (Kelas {{ student.classroom?.level }} {{ student.classroom?.name }})
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.target_id" class="mt-2" />
+                        <InputLabel value="Pilih Siswa (Bisa Pilih Banyak)" />
+                        <div class="mt-2 max-h-48 overflow-y-auto p-3 border border-gray-200 rounded-md bg-gray-50 flex flex-col gap-2">
+                            <label v-for="student in students" :key="student.id" class="flex items-center space-x-3 bg-white p-2 border border-gray-100 rounded shadow-sm hover:border-indigo-300 transition-colors cursor-pointer">
+                                <input type="checkbox" v-model="form.target_student_ids" :value="student.id" class="text-indigo-600 focus:ring-indigo-500 rounded" />
+                                <span class="font-medium text-sm text-gray-800">{{ student.nisn }} - {{ student.name }} (Kelas {{ student.classroom?.level }} {{ student.classroom?.name }})</span>
+                            </label>
+                            <div v-if="students.length === 0" class="text-center text-sm text-gray-500 py-4">
+                                Belum ada data siswa aktif.
+                            </div>
+                        </div>
+                        <InputError :message="form.errors.target_student_ids" class="mt-2" />
                     </div>
 
                     <div class="mb-4">

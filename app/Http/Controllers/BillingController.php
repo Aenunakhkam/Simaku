@@ -54,7 +54,9 @@ class BillingController extends Controller
     {
         $validated = $request->validate([
             'target_type' => 'required|in:classroom,student,all',
-            'target_id' => 'required_unless:target_type,all|nullable|integer',
+            'target_id' => 'required_if:target_type,classroom|nullable|integer',
+            'target_student_ids' => 'required_if:target_type,student|array',
+            'target_student_ids.*' => 'exists:students,id',
             'payment_category_ids' => 'required|array|min:1',
             'payment_category_ids.*' => 'exists:payment_categories,id',
             'academic_year_id' => 'required|exists:academic_years,id',
@@ -70,8 +72,7 @@ class BillingController extends Controller
                                      ->where('status', 'active')
                                      ->get();
         } else {
-            $student = Student::find($validated['target_id']);
-            if ($student) $studentsToBill->push($student);
+            $studentsToBill = Student::whereIn('id', $validated['target_student_ids'] ?? [])->get();
         }
 
         $count = 0;
