@@ -64,7 +64,7 @@
         </tr>
         <tr>
             <td class="label">Siswa Kelas</td>
-            <td class="value">: {{ $payment->student->classroom->level }} {{ $payment->student->classroom->name }}</td>
+            <td class="value">: {{ $payment->student->classroom ? $payment->student->classroom->level . ' ' . $payment->student->classroom->name : '-' }}</td>
             <td class="label">Tanggal Bayar</td>
             <td class="value">: {{ date('d F Y', strtotime($payment->date)) }}</td>
         </tr>
