@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cetak Massal Slip Tagihan</title>
+    <style>
+        @page {
+            margin: 0; /* no margin, handled by container */
+            size: A4 portrait;
+        }
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+        .receipt-container {
+            width: 100%;
+            height: 48.5%;
+            padding: 25px 30px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .cut-line {
+            width: 100%;
+            height: 0;
+            border-top: 1px dashed #888;
+            margin: 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        
+        .kop-surat {
+            width: 100%;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .kop-surat td.teks {
+            text-align: center;
+        }
+        .kop-surat h1 { margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase; }
+        .kop-surat p { margin: 2px 0 0 0; font-size: 10px; }
+        
+        .title { text-align: center; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
+        
+        .info-table { width: 100%; margin-bottom: 15px; font-size: 11px; }
+        .info-table td { vertical-align: top; padding: 2px 0; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .data-table th, .data-table td { border: 1px solid #000; padding: 5px; font-size: 10px; }
+        .data-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; text-transform: uppercase; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        
+        .summary-box { width: 45%; float: right; border: 1px solid #000; padding: 5px; font-size: 11px; }
+        .summary-box table { width: 100%; }
+        .summary-box td { padding: 3px; }
+        
+        .clear { clear: both; }
+        
+        .footer-note { margin-top: 15px; font-size: 9px; font-style: italic; color: #555; text-align: center; }
+    </style>
+</head>
+<body>
+    @php 
+        $counter = 0; 
+        $totalStudents = count($students);
+        $months = [1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'];
+    @endphp
+    
+    @foreach($students as $index => $student)
+        <div class="receipt-container">
+            <table class="kop-surat">
+                <tr>
+                    <td class="teks">
+                        <h1>SMK HASYIM ASYARI BOJONG</h1>
+                        <p>JL.Babakan Tuwel Bojong Tegal 52465</p>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="title">SLIP TAGIHAN & STATUS PEMBAYARAN</div>
+
+            <table class="info-table">
+                <tr>
+                    <td width="15%"><strong>Nama Siswa</strong></td>
+                    <td width="35%">: {{ $student->name }}</td>
+                    <td width="15%"><strong>Tanggal Cetak</strong></td>
+                    <td width="35%">: {{ date('d M Y') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>NIS / NISN</strong></td>
+                    <td>: {{ $student->nis }} / {{ $student->nisn }}</td>
+                    <td><strong>Tahun Ajaran</strong></td>
+                    <td>: {{ \App\Models\AcademicYear::find(session('academic_year_id'))->name ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Kelas</strong></td>
+                    <td>: {{ $student->classroom ? $student->classroom->level . ' ' . $student->classroom->name : '-' }}</td>
+                    <td><strong>Status Pembayaran</strong></td>
+                    <td>: 
+                        @if($student->payment_status === 'lunas')
+                            <strong style="color: #28a745;">LUNAS</strong>
+                        @elseif($student->payment_status === 'nyicil')
+                            <strong style="color: #ea580c;">MENCICIL (BELUM LUNAS)</strong>
+                        @else
+                            <strong style="color: #dc3545;">BELUM BAYAR</strong>
+                        @endif
+                    </td>
+                </tr>
+            </table>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="5%">No</th>
+                        <th width="35%">Rincian Tagihan</th>
+                        <th width="20%">Nominal Tagihan</th>
+                        <th width="20%">Terbayar</th>
+                        <th width="20%">Sisa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $no = 1; @endphp
+                    @forelse($student->billings as $bill)
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td>{{ $bill->category ? $bill->category->name : '-' }} {{ $bill->month ? '(Bulan '.$months[$bill->month].')' : '' }}</td>
+                        <td class="text-right">{{ number_format($bill->amount, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($bill->paid_amount, 0, ',', '.') }}</td>
+                        <td class="text-right font-bold">{{ number_format($bill->remaining_amount, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center">Tidak ada rincian tagihan di tahun ajaran aktif.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="summary-box">
+                <table>
+                    <tr>
+                        <td>Total Tagihan</td>
+                        <td class="text-right font-bold">Rp {{ number_format($student->total_bill, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Terbayar</td>
+                        <td class="text-right font-bold" style="color: #28a745;">Rp {{ number_format($student->total_paid, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border-top: 1px solid #000; padding-top: 5px;">Sisa Tagihan</td>
+                        <td class="text-right font-bold" style="color: #dc3545; border-top: 1px solid #000; padding-top: 5px;">Rp {{ number_format($student->remaining, 0, ',', '.') }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="clear"></div>
+            
+            <div class="footer-note">
+                Dicetak oleh Sistem Manajemen Keuangan (SIMAKU) pada {{ date('d/m/Y H:i:s') }}
+            </div>
+
+            @if($counter % 2 == 0 && $index < $totalStudents - 1)
+                <div class="cut-line"></div>
+            @endif
+        </div>
+        
+        @php $counter++; @endphp
+        
+        @if($counter % 2 == 0 && $index < $totalStudents - 1)
+            <div class="page-break"></div>
+        @endif
+    @endforeach
+    
+    @if(count($students) == 0)
+        <div style="padding: 50px; text-align: center; font-size: 14px;">
+            Tidak ada data siswa untuk dicetak.
+        </div>
+    @endif
+</body>
+</html>

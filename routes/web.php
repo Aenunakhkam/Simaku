@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Billings & Payments
     Route::get('/billings/monitoring', [\App\Http\Controllers\BillingMonitoringController::class, 'index'])->name('billings.monitoring');
+    Route::get('/billings/monitoring/print', [\App\Http\Controllers\BillingMonitoringController::class, 'printMassal'])->name('billings.monitoring.print');
     Route::resource('billings', \App\Http\Controllers\BillingController::class);
     Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/process/{student}', [\App\Http\Controllers\PaymentController::class, 'process'])->name('payments.process');
