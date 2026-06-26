@@ -237,7 +237,15 @@ const onSearch = () => {
                         <div class="mt-2 max-h-48 overflow-y-auto p-3 border border-gray-200 rounded-md bg-gray-50 flex flex-col gap-2">
                             <label v-for="student in students" :key="student.id" class="flex items-center space-x-3 bg-white p-2 border border-gray-100 rounded shadow-sm hover:border-indigo-300 transition-colors cursor-pointer">
                                 <input type="checkbox" v-model="form.target_student_ids" :value="student.id" class="text-indigo-600 focus:ring-indigo-500 rounded" />
-                                <span class="font-medium text-sm text-gray-800">{{ student.nisn }} - {{ student.name }} (Kelas {{ student.classroom?.level }} {{ student.classroom?.name }})</span>
+                                <span class="font-medium text-sm text-gray-800">
+                                    {{ student.nisn }} - {{ student.name }} 
+                                    <span v-if="student.classroom" class="text-gray-500">
+                                        (Kelas {{ student.classroom.level }} {{ student.classroom.name }})
+                                    </span>
+                                    <span v-else class="text-gray-400">
+                                        (Tanpa Kelas)
+                                    </span>
+                                </span>
                             </label>
                             <div v-if="students.length === 0" class="text-center text-sm text-gray-500 py-4">
                                 Belum ada data siswa aktif.

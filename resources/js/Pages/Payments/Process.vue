@@ -137,7 +137,15 @@ const deletePayment = (id) => {
                         </div>
                         <div>
                             <h3 class="text-2xl font-extrabold">{{ student.name }}</h3>
-                            <p class="text-blue-200 mt-1">NISN: {{ student.nisn }} | Kelas: {{ student.classroom?.level }} {{ student.classroom?.name }} ({{ student.classroom?.major?.name }})</p>
+                            <p class="text-blue-200 mt-1">
+                                NISN: {{ student.nisn }} | Kelas: 
+                                <template v-if="student.classroom">
+                                    {{ student.classroom.level }} {{ student.classroom.name }} ({{ student.classroom.major?.name || 'Umum' }})
+                                </template>
+                                <template v-else>
+                                    Tanpa Kelas
+                                </template>
+                            </p>
                         </div>
                     </div>
                     <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 min-w-[200px] text-center border border-white/20">

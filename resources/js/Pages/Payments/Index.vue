@@ -82,10 +82,13 @@ const onSearch = () => {
                                         <div class="text-sm text-gray-500">NISN: {{ student.nisn }}</div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        <span v-if="student.classroom" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                             {{ student.classroom?.level }} {{ student.classroom?.name }}
                                         </span>
-                                        <div class="text-xs text-gray-500 mt-1">{{ student.classroom?.major?.name }}</div>
+                                        <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Tanpa Kelas
+                                        </span>
+                                        <div v-if="student.classroom?.major" class="text-xs text-gray-500 mt-1">{{ student.classroom.major.name }}</div>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <Link :href="route('payments.process', student.id)" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 border border-transparent rounded-xl font-bold text-xs text-white uppercase tracking-widest hover:from-green-600 hover:to-emerald-700 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-md hover:shadow-lg">

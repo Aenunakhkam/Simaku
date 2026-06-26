@@ -77,7 +77,7 @@ const openEditModal = (student) => {
     form.nisn = student.nisn;
     form.nis = student.nis;
     form.name = student.name;
-    form.classroom_id = student.classroom_id;
+    form.classroom_id = student.classroom_id || '';
     form.status = student.status;
     isEditModalOpen.value = true;
 };
@@ -206,8 +206,11 @@ const onSearch = () => {
                                     </td>
                                     <td class="px-6 py-4 font-medium">{{ student.name }}</td>
                                     <td class="px-6 py-4">
-                                        <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
+                                        <span v-if="student.classroom" class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
                                             {{ student.classroom?.name }} ({{ student.classroom?.major?.code }})
+                                        </span>
+                                        <span v-else class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-400">
+                                            Tanpa Kelas
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
@@ -282,14 +285,13 @@ const onSearch = () => {
                     </div>
 
                     <div class="mb-4">
-                        <InputLabel for="classroom_id" value="Kelas" />
+                        <InputLabel for="classroom_id" value="Kelas (Opsional)" />
                         <select 
                             id="classroom_id" 
                             v-model="form.classroom_id" 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            required
                         >
-                            <option value="" disabled>Pilih Kelas...</option>
+                            <option value="">Pilih Kelas (Opsional)</option>
                             <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
                                 {{ classroom.level }} - {{ classroom.name }} ({{ classroom.major?.code }})
                             </option>
