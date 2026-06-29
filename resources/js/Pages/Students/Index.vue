@@ -40,10 +40,23 @@ const bulkUpdateForm = useForm({
     classroom_id: '',
 });
 
-const selectedClassroomMajor = computed(() => {
-    if (!form.classroom_id) return '-';
-    const classroom = props.classrooms.find(c => c.id === form.classroom_id);
-    return classroom && classroom.major ? classroom.major.name : '-';
+const selectedMajorId = ref('');
+
+const uniqueMajors = computed(() => {
+    const majors = [];
+    const majorIds = new Set();
+    props.classrooms.forEach(c => {
+        if (c.major && !majorIds.has(c.major.id)) {
+            majorIds.add(c.major.id);
+            majors.push(c.major);
+        }
+    });
+    return majors;
+});
+
+const filteredClassrooms = computed(() => {
+    if (!selectedMajorId.value) return [];
+    return props.classrooms.filter(c => c.major_id === selectedMajorId.value);
 });
 
 const isAllSelected = computed({
@@ -76,6 +89,7 @@ const submitBulkUpdate = () => {
 
 const openCreateModal = () => {
     form.reset();
+    selectedMajorId.value = '';
     isCreateModalOpen.value = true;
 };
 
@@ -85,6 +99,14 @@ const openEditModal = (student) => {
     form.nis = student.nis;
     form.name = student.name;
     form.classroom_id = student.classroom_id || '';
+    
+    if (student.classroom_id) {
+        const classroom = props.classrooms.find(c => c.id === student.classroom_id);
+        selectedMajorId.value = classroom && classroom.major ? classroom.major.id : '';
+    } else {
+        selectedMajorId.value = '';
+    }
+
     form.status = student.status;
     isEditModalOpen.value = true;
 };
@@ -304,22 +326,33 @@ const onSearch = () => {
 
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
+                            <InputLabel for="major_id" value="Jurusan (Opsional)" />
+                            <select 
+                                id="major_id" 
+                                v-model="selectedMajorId" 
+                                @change="form.classroom_id = ''"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                <option value="">Pilih Jurusan</option>
+                                <option v-for="major in uniqueMajors" :key="major.id" :value="major.id">
+                                    {{ major.name }} ({{ major.code }})
+                                </option>
+                            </select>
+                        </div>
+                        <div>
                             <InputLabel for="classroom_id" value="Kelas (Opsional)" />
                             <select 
                                 id="classroom_id" 
                                 v-model="form.classroom_id" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                :disabled="!selectedMajorId"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                             >
-                                <option value="">Pilih Kelas (Opsional)</option>
-                                <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
-                                    {{ classroom.level }} - {{ classroom.name }} ({{ classroom.major?.code }})
+                                <option value="">Pilih Kelas</option>
+                                <option v-for="classroom in filteredClassrooms" :key="classroom.id" :value="classroom.id">
+                                    {{ classroom.level }} - {{ classroom.name }}
                                 </option>
                             </select>
                             <InputError :message="form.errors.classroom_id" class="mt-2" />
-                        </div>
-                        <div>
-                            <InputLabel value="Jurusan" />
-                            <TextInput type="text" :value="selectedClassroomMajor" disabled class="mt-1 block w-full bg-gray-100 text-gray-500 cursor-not-allowed" />
                         </div>
                     </div>
 
