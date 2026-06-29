@@ -37,8 +37,11 @@ class ReportController extends Controller
         $majorStats = \App\Models\Major::select('majors.id', 'majors.name', 'majors.code')
             ->get()
             ->map(function ($major) use ($academicYearId) {
-                $billings = \App\Models\Billing::whereHas('student.classroom', function ($q) use ($major) {
-                    $q->where('major_id', $major->id);
+                $billings = \App\Models\Billing::whereHas('student', function ($q) use ($major) {
+                    $q->where('major_id', $major->id)
+                      ->orWhereHas('classroom', function ($q2) use ($major) {
+                          $q2->where('major_id', $major->id);
+                      });
                 })->where('academic_year_id', $academicYearId)
                 ->withSum('paymentDetails', 'amount')
                 ->get();

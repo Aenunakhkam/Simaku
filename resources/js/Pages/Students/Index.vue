@@ -18,9 +18,11 @@ const props = defineProps({
 
 const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
+const isViewModalOpen = ref(false);
 const isImportModalOpen = ref(false);
 const isBulkUpdateModalOpen = ref(false);
 const editingStudent = ref(null);
+const viewingStudent = ref(null);
 const selectedStudents = ref([]);
 
 const form = useForm({
@@ -28,6 +30,7 @@ const form = useForm({
     nis: '',
     name: '',
     classroom_id: '',
+    major_id: '',
     status: 'active',
 });
 
@@ -39,8 +42,6 @@ const bulkUpdateForm = useForm({
     student_ids: [],
     classroom_id: '',
 });
-
-const selectedMajorId = ref('');
 
 const uniqueMajors = computed(() => {
     const majors = [];
@@ -55,8 +56,8 @@ const uniqueMajors = computed(() => {
 });
 
 const filteredClassrooms = computed(() => {
-    if (!selectedMajorId.value) return [];
-    return props.classrooms.filter(c => c.major_id === selectedMajorId.value);
+    if (!form.major_id) return [];
+    return props.classrooms.filter(c => c.major_id === form.major_id);
 });
 
 const isAllSelected = computed({
@@ -89,8 +90,13 @@ const submitBulkUpdate = () => {
 
 const openCreateModal = () => {
     form.reset();
-    selectedMajorId.value = '';
+    form.major_id = '';
     isCreateModalOpen.value = true;
+};
+
+const openViewModal = (student) => {
+    viewingStudent.value = student;
+    isViewModalOpen.value = true;
 };
 
 const openEditModal = (student) => {
@@ -100,11 +106,13 @@ const openEditModal = (student) => {
     form.name = student.name;
     form.classroom_id = student.classroom_id || '';
     
-    if (student.classroom_id) {
+    if (student.major_id) {
+        form.major_id = student.major_id;
+    } else if (student.classroom_id) {
         const classroom = props.classrooms.find(c => c.id === student.classroom_id);
-        selectedMajorId.value = classroom && classroom.major ? classroom.major.id : '';
+        form.major_id = classroom && classroom.major ? classroom.major.id : '';
     } else {
-        selectedMajorId.value = '';
+        form.major_id = '';
     }
 
     form.status = student.status;
@@ -114,6 +122,7 @@ const openEditModal = (student) => {
 const closeModals = () => {
     isCreateModalOpen.value = false;
     isEditModalOpen.value = false;
+    isViewModalOpen.value = false;
     isImportModalOpen.value = false;
     isBulkUpdateModalOpen.value = false;
     form.reset();
@@ -258,7 +267,10 @@ const onSearch = () => {
                                         <span v-else-if="student.status === 'graduated'" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">Lulus</span>
                                         <span v-else class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Keluar</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right space-x-2">
+                                    <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                        <button @click="openViewModal(student)" class="inline-flex items-center justify-center text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 p-2 rounded-lg transition-colors" title="Lihat">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </button>
                                         <button @click="openEditModal(student)" class="inline-flex items-center justify-center text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Edit">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </button>
@@ -329,7 +341,7 @@ const onSearch = () => {
                             <InputLabel for="major_id" value="Jurusan (Opsional)" />
                             <select 
                                 id="major_id" 
-                                v-model="selectedMajorId" 
+                                v-model="form.major_id" 
                                 @change="form.classroom_id = ''"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             >
@@ -476,5 +488,53 @@ const onSearch = () => {
                 </form>
             </div>
         </Modal>
+
+        <!-- View Modal -->
+        <Modal :show="isViewModalOpen" @close="closeModals">
+            <div class="bg-gradient-to-b from-teal-50/50 to-white px-6 py-5 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-teal-900 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+                    Detail Data Siswa
+                </h2>
+            </div>
+            <div class="p-6 sm:p-8" v-if="viewingStudent">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-4 border-b border-gray-100 pb-4">
+                        <div class="text-sm font-medium text-gray-500">NISN</div>
+                        <div class="col-span-2 text-sm font-bold text-gray-900">{{ viewingStudent.nisn }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 border-b border-gray-100 pb-4">
+                        <div class="text-sm font-medium text-gray-500">NIS</div>
+                        <div class="col-span-2 text-sm font-bold text-gray-900">{{ viewingStudent.nis || '-' }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 border-b border-gray-100 pb-4">
+                        <div class="text-sm font-medium text-gray-500">Nama Lengkap</div>
+                        <div class="col-span-2 text-sm font-bold text-gray-900">{{ viewingStudent.name }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 border-b border-gray-100 pb-4">
+                        <div class="text-sm font-medium text-gray-500">Jurusan</div>
+                        <div class="col-span-2 text-sm font-bold text-gray-900">
+                            {{ viewingStudent.major ? viewingStudent.major.name : (viewingStudent.classroom?.major?.name || '-') }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 border-b border-gray-100 pb-4">
+                        <div class="text-sm font-medium text-gray-500">Kelas</div>
+                        <div class="col-span-2 text-sm font-bold text-gray-900">{{ viewingStudent.classroom ? viewingStudent.classroom.name : '-' }}</div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 pb-2">
+                        <div class="text-sm font-medium text-gray-500">Status</div>
+                        <div class="col-span-2">
+                            <span v-if="viewingStudent.status === 'active'" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
+                            <span v-else-if="viewingStudent.status === 'graduated'" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Lulus</span>
+                            <span v-else class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Keluar / Pindah</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end">
+                    <SecondaryButton @click="closeModals">Tutup</SecondaryButton>
+                </div>
+            </div>
+        </Modal>
+
     </AuthenticatedLayout>
 </template>

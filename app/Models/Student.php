@@ -9,11 +9,16 @@ class Student extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nisn', 'nis', 'name', 'classroom_id', 'status'];
+    protected $fillable = ['nisn', 'nis', 'name', 'classroom_id', 'major_id', 'status'];
 
     public function classroom()
     {
         return $this->belongsTo(Classroom::class);
+    }
+
+    public function major()
+    {
+        return $this->belongsTo(Major::class);
     }
 
     public function billings()

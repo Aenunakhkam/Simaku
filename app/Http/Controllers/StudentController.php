@@ -44,6 +44,7 @@ class StudentController extends Controller
             'nis' => 'nullable|string|max:20|unique:students',
             'name' => 'required|string|max:255',
             'classroom_id' => 'nullable|exists:classrooms,id',
+            'major_id' => 'nullable|exists:majors,id',
             'status' => 'required|in:active,graduated,dropped_out',
         ]);
 
@@ -59,6 +60,7 @@ class StudentController extends Controller
             'nis' => 'nullable|string|max:20|unique:students,nis,' . $student->id,
             'name' => 'required|string|max:255',
             'classroom_id' => 'nullable|exists:classrooms,id',
+            'major_id' => 'nullable|exists:majors,id',
             'status' => 'required|in:active,graduated,dropped_out',
         ]);
 
