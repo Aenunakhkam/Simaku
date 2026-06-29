@@ -49,33 +49,48 @@ class ReportController extends Controller
         $majorStats = \App\Models\Major::select('majors.id', 'majors.name', 'majors.code')
             ->get()
             ->map(function ($major) use ($academicYearId) {
-                $billings = \App\Models\Billing::whereHas('student', function ($q) use ($major) {
+                // Ambil semua siswa di jurusan ini
+                $students = \App\Models\Student::where(function ($q) use ($major) {
                     $q->where('major_id', $major->id)
                       ->orWhereHas('classroom', function ($q2) use ($major) {
                           $q2->where('major_id', $major->id);
                       });
-                })->where('academic_year_id', $academicYearId)
-                ->withSum('paymentDetails', 'amount')
-                ->get();
+                })->withCount([
+                    'billings as total_billings' => function ($query) use ($academicYearId) {
+                        $query->where('academic_year_id', $academicYearId);
+                    },
+                    'billings as paid_billings' => function ($query) use ($academicYearId) {
+                        $query->where('academic_year_id', $academicYearId)->where('is_paid', true);
+                    }
+                ])->with(['billings' => function ($query) use ($academicYearId) {
+                    $query->where('academic_year_id', $academicYearId)
+                          ->withSum('paymentDetails', 'amount');
+                }])->get();
 
                 $lunas = 0;
-                $belumLunas = 0; // Nyicil
+                $belumLunas = 0; // Nyicil / Baru bayar sebagian
                 $belumBayar = 0;
 
-                foreach ($billings as $b) {
-                    if ($b->is_paid) {
-                        $lunas++;
-                    } else {
-                        $paidAmount = $b->payment_details_sum_amount ?? 0;
-                        if ($paidAmount > 0) {
-                            $belumLunas++;
+                foreach ($students as $student) {
+                    if ($student->total_billings > 0) {
+                        if ($student->paid_billings == $student->total_billings) {
+                            $lunas++;
                         } else {
-                            $belumBayar++;
+                            // Cek apakah siswa ini sudah bayar cicilan sama sekali
+                            $totalPaidAmount = $student->billings->sum('payment_details_sum_amount');
+                            if ($totalPaidAmount > 0) {
+                                $belumLunas++;
+                            } else {
+                                $belumBayar++;
+                            }
                         }
+                    } else {
+                        // Jika tidak ada tagihan, kita anggap masuk belum bayar agar total siswa sesuai
+                        $belumBayar++;
                     }
                 }
 
-                $total = $billings->count();
+                $total = $students->count();
                 $percentage = $total > 0 ? round(($lunas / $total) * 100, 1) : 0;
 
                 return [
