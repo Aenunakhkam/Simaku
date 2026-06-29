@@ -8,6 +8,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import Modal from '@/Components/Modal.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     students: Object,
@@ -114,9 +115,20 @@ const submitImport = () => {
 };
 
 const deleteStudent = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
-        useForm({}).delete(route('students.destroy', id));
-    }
+    Swal.fire({
+        title: 'Hapus Data Siswa?',
+        text: "Anda yakin ingin menghapus data ini?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            useForm({}).delete(route('students.destroy', id));
+        }
+    });
 };
 
 const searchForm = useForm({ 

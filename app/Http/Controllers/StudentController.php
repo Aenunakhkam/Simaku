@@ -69,6 +69,10 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
+        if ($student->billings()->exists() || $student->payments()->exists()) {
+            return redirect()->route('students.index')->with('error', 'Gagal: Siswa ini tidak dapat dihapus karena masih memiliki riwayat data tagihan atau pembayaran.');
+        }
+
         $student->delete();
 
         return redirect()->route('students.index')->with('success', 'Siswa berhasil dihapus.');
