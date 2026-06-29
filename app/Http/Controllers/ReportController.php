@@ -33,6 +33,18 @@ class ReportController extends Controller
             return $classroom;
         });
 
+        return Inertia::render('Reports/Classrooms', [
+            'classrooms' => $classrooms
+        ]);
+    }
+
+    public function majors(Request $request)
+    {
+        $academicYearId = session('academic_year_id');
+        if (!$academicYearId) {
+            return redirect()->route('academic-years.index')->with('error', 'Silakan pilih tahun ajaran aktif terlebih dahulu.');
+        }
+
         // Hitung statistik berdasarkan jurusan
         $majorStats = \App\Models\Major::select('majors.id', 'majors.name', 'majors.code')
             ->get()
@@ -78,9 +90,42 @@ class ReportController extends Controller
                 ];
             });
 
-        return Inertia::render('Reports/Classrooms', [
-            'classrooms' => $classrooms,
-            'majorStats' => $majorStats
+        return Inertia::render('Reports/Majors', [
+            'majors' => $majorStats
+        ]);
+    }
+
+    public function majorDetail($id)
+    {
+        $major = \App\Models\Major::findOrFail($id);
+        $academicYearId = session('academic_year_id');
+
+        $students = \App\Models\Student::with(['classroom'])->where(function ($q) use ($major) {
+            $q->where('major_id', $major->id)
+              ->orWhereHas('classroom', function ($q2) use ($major) {
+                  $q2->where('major_id', $major->id);
+              });
+        })->with([
+            'billings' => function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId)->with(['category', 'academicYear']);
+            }
+        ])->withCount([
+            'billings as total_billings' => function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId);
+            },
+            'billings as paid_billings' => function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId)->where('is_paid', true);
+            }
+        ])->get()->map(function ($student) {
+            $student->payment_percentage = $student->total_billings > 0 
+                ? round(($student->paid_billings / $student->total_billings) * 100) 
+                : 0;
+            return $student;
+        });
+
+        return Inertia::render('Reports/MajorDetail', [
+            'major' => $major,
+            'students' => $students
         ]);
     }
 

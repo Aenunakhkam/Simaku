@@ -5,7 +5,6 @@ import { computed } from 'vue';
 
 const props = defineProps({
     classrooms: Array,
-    majorStats: Array,
 });
 
 // Urutkan kelas berdasarkan tingkat kelunasan (tertinggi ke terendah) atau level
@@ -37,57 +36,7 @@ const getProgressTextClass = (percentage) => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
-                <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-800">Statistik Tagihan Berdasarkan Jurusan</h3>
-                        <p class="text-sm text-gray-500 mt-1">Ringkasan pembayaran seluruh siswa (tagihan aktif) per jurusan.</p>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                    <div 
-                        v-for="major in majorStats" 
-                        :key="major.id"
-                        class="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 shadow-sm border border-indigo-100 flex flex-col"
-                    >
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="text-xl font-black text-indigo-900">{{ major.code }}</h4>
-                                <p class="text-sm font-medium text-indigo-700 mt-0.5">{{ major.name }}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-bold" :class="getProgressTextClass(major.percentage)">{{ major.percentage }}%</span>
-                                <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Lunas</p>
-                            </div>
-                        </div>
-
-                        <div class="w-full bg-indigo-100 rounded-full h-2.5 mb-5 overflow-hidden">
-                            <div class="h-2.5 rounded-full transition-all duration-1000 ease-out" 
-                                 :class="getProgressColor(major.percentage)" 
-                                 :style="`width: ${major.percentage}%`">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-4 text-center mt-auto">
-                            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-50">
-                                <p class="text-xs text-gray-500 font-bold mb-1">Lunas</p>
-                                <p class="text-lg font-black text-green-600">{{ major.lunas }}</p>
-                            </div>
-                            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-50">
-                                <p class="text-xs text-gray-500 font-bold mb-1">Belum Lunas</p>
-                                <p class="text-lg font-black text-yellow-500">{{ major.belum_lunas }}</p>
-                            </div>
-                            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-50">
-                                <p class="text-xs text-gray-500 font-bold mb-1">Belum Bayar</p>
-                                <p class="text-lg font-black text-red-500">{{ major.belum_bayar }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="!majorStats || majorStats.length === 0" class="col-span-full bg-white rounded-2xl p-8 text-center border border-gray-100">
-                        <p class="text-gray-500">Belum ada data jurusan.</p>
-                    </div>
-                </div>
 
                 <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
