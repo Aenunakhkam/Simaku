@@ -93,6 +93,13 @@ class UpdateController extends Controller
             return back()->with('error', 'Gagal menarik pembaruan: ' . implode(" ", $output));
         }
 
-        return back()->with('message', 'Pembaruan berhasil ditarik dari Github!');
+        // Jalankan migrasi database secara otomatis setelah pull
+        try {
+            \Artisan::call('migrate', ['--force' => true]);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Pembaruan berhasil ditarik, tetapi gagal memperbarui database: ' . $e->getMessage());
+        }
+
+        return back()->with('message', 'Pembaruan berhasil ditarik dan database telah diperbarui!');
     }
 }
