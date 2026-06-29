@@ -40,6 +40,12 @@ const bulkUpdateForm = useForm({
     classroom_id: '',
 });
 
+const selectedClassroomMajor = computed(() => {
+    if (!form.classroom_id) return '-';
+    const classroom = props.classrooms.find(c => c.id === form.classroom_id);
+    return classroom && classroom.major ? classroom.major.name : '-';
+});
+
 const isAllSelected = computed({
     get: () => {
         return props.students.data && props.students.data.length > 0 && selectedStudents.value.length === props.students.data.length;
@@ -296,19 +302,25 @@ const onSearch = () => {
                         <InputError :message="form.errors.name" class="mt-2" />
                     </div>
 
-                    <div class="mb-4">
-                        <InputLabel for="classroom_id" value="Kelas (Opsional)" />
-                        <select 
-                            id="classroom_id" 
-                            v-model="form.classroom_id" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        >
-                            <option value="">Pilih Kelas (Opsional)</option>
-                            <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
-                                {{ classroom.level }} - {{ classroom.name }} ({{ classroom.major?.code }})
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.classroom_id" class="mt-2" />
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <InputLabel for="classroom_id" value="Kelas (Opsional)" />
+                            <select 
+                                id="classroom_id" 
+                                v-model="form.classroom_id" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                <option value="">Pilih Kelas (Opsional)</option>
+                                <option v-for="classroom in classrooms" :key="classroom.id" :value="classroom.id">
+                                    {{ classroom.level }} - {{ classroom.name }} ({{ classroom.major?.code }})
+                                </option>
+                            </select>
+                            <InputError :message="form.errors.classroom_id" class="mt-2" />
+                        </div>
+                        <div>
+                            <InputLabel value="Jurusan" />
+                            <TextInput type="text" :value="selectedClassroomMajor" disabled class="mt-1 block w-full bg-gray-100 text-gray-500 cursor-not-allowed" />
+                        </div>
                     </div>
 
                     <div class="mb-6">

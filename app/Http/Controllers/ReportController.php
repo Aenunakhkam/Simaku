@@ -33,8 +33,51 @@ class ReportController extends Controller
             return $classroom;
         });
 
+        // Hitung statistik berdasarkan jurusan
+        $majorStats = \App\Models\Major::select('majors.id', 'majors.name', 'majors.code')
+            ->get()
+            ->map(function ($major) use ($academicYearId) {
+                $billings = \App\Models\Billing::whereHas('student.classroom', function ($q) use ($major) {
+                    $q->where('major_id', $major->id);
+                })->where('academic_year_id', $academicYearId)
+                ->withSum('paymentDetails', 'amount')
+                ->get();
+
+                $lunas = 0;
+                $belumLunas = 0; // Nyicil
+                $belumBayar = 0;
+
+                foreach ($billings as $b) {
+                    if ($b->is_paid) {
+                        $lunas++;
+                    } else {
+                        $paidAmount = $b->payment_details_sum_amount ?? 0;
+                        if ($paidAmount > 0) {
+                            $belumLunas++;
+                        } else {
+                            $belumBayar++;
+                        }
+                    }
+                }
+
+                $total = $billings->count();
+                $percentage = $total > 0 ? round(($lunas / $total) * 100, 1) : 0;
+
+                return [
+                    'id' => $major->id,
+                    'name' => $major->name,
+                    'code' => $major->code,
+                    'lunas' => $lunas,
+                    'belum_lunas' => $belumLunas,
+                    'belum_bayar' => $belumBayar,
+                    'total' => $total,
+                    'percentage' => $percentage
+                ];
+            });
+
         return Inertia::render('Reports/Classrooms', [
-            'classrooms' => $classrooms
+            'classrooms' => $classrooms,
+            'majorStats' => $majorStats
         ]);
     }
 
