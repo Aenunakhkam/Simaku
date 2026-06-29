@@ -123,9 +123,19 @@ class ReportController extends Controller
             return $student;
         });
 
+        $totalBillings = $students->sum('total_billings');
+        $paidBillings = $students->sum('paid_billings');
+        $majorPercentage = $totalBillings > 0 ? round(($paidBillings / $totalBillings) * 100, 1) : 0;
+
         return Inertia::render('Reports/MajorDetail', [
             'major' => $major,
-            'students' => $students
+            'students' => $students,
+            'stats' => [
+                'total_students' => $students->count(),
+                'percentage' => $majorPercentage,
+                'total_billings' => $totalBillings,
+                'paid_billings' => $paidBillings,
+            ]
         ]);
     }
 
