@@ -15,8 +15,7 @@ class StudentController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
-
-        $query = Student::with('classroom.major')->latest();
+        $query = Student::with(['classroom.major', 'major'])->latest();
 
         if ($search) {
             $query->where('name', 'ilike', "%{$search}%")

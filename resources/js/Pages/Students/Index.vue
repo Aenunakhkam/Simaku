@@ -259,7 +259,7 @@ const onSearch = () => {
                                             {{ student.classroom?.name }} ({{ student.classroom?.major?.code }})
                                         </span>
                                         <span v-else class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-400">
-                                            Tanpa Kelas
+                                            Tanpa Kelas {{ student.major ? '(' + student.major.code + ')' : '' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
