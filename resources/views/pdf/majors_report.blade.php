@@ -94,9 +94,10 @@
                 <th style="width: 5%;">No</th>
                 <th style="width: 25%;">Nama Siswa</th>
                 <th style="width: 15%;">NISN / NIS</th>
-                <th style="width: 20%;">Kelas / Jurusan</th>
+                <th style="width: 15%;">Kelas / Jurusan</th>
                 <th style="width: 15%;">Status Pembayaran</th>
-                <th style="width: 20%;">Keterangan Tagihan</th>
+                <th style="width: 13%;">Total Tagihan</th>
+                <th style="width: 12%;">Sisa Tunggakan</th>
             </tr>
         </thead>
         <tbody>
@@ -115,25 +116,34 @@
                             <span style="color: red; font-weight: bold;">BELUM BAYAR</span>
                         @endif
                     </td>
-                    <td class="text-center">
-                        Rp {{ number_format($s->tagihan_dibayar, 0, ',', '.') }} / Rp {{ number_format($s->total_tagihan, 0, ',', '.') }}
+                    <td class="text-right">
+                        Rp {{ number_format($s->total_tagihan, 0, ',', '.') }}
+                    </td>
+                    <td class="text-right">
+                        Rp {{ number_format($s->total_tagihan - $s->tagihan_dibayar, 0, ',', '.') }}
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-center" style="padding: 20px;">Tidak ada siswa yang sesuai dengan filter.</td>
+                    <td colspan="7" class="text-center" style="padding: 20px;">Tidak ada siswa yang sesuai dengan filter.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
     <div class="footer">
+        <div style="float: left; width: 50%; color: #666; font-size: 10px; margin-top: 20px;">
+            <p><strong>SIMAKU</strong> - Sistem Informasi Manajemen Keuangan Umum</p>
+            <p><i>Dokumen ini di-generate secara otomatis oleh sistem pada {{ date('d F Y, H:i') }}</i></p>
+            <p>Halaman <span class="page-number"></span></p>
+        </div>
         <div class="signature-box">
             <p>................., {{ date('d F Y') }}</p>
             <p>Kepala Instansi / Bendahara</p>
             <div class="signature-space"></div>
             <p><strong>_________________________</strong></p>
         </div>
+        <div style="clear: both;"></div>
     </div>
 </body>
 </html>

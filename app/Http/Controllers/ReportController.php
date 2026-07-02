@@ -204,7 +204,7 @@ class ReportController extends Controller
 
         if ($format === 'excel') {
             $excelData = [
-                ['No', 'Nama Siswa', 'NISN/NIS', 'Kelas/Jurusan', 'Status Pembayaran']
+                ['No', 'Nama Siswa', 'NISN/NIS', 'Kelas/Jurusan', 'Status Pembayaran', 'Total Tagihan', 'Sisa Tunggakan']
             ];
             
             foreach ($filteredStudents as $index => $s) {
@@ -213,7 +213,9 @@ class ReportController extends Controller
                     $s->nama,
                     $s->nisn,
                     $s->kelas_jurusan,
-                    $s->status
+                    $s->status,
+                    'Rp ' . number_format($s->total_tagihan, 0, ',', '.'),
+                    'Rp ' . number_format($s->total_tagihan - $s->tagihan_dibayar, 0, ',', '.')
                 ];
             }
             
