@@ -240,11 +240,44 @@ class ReportController extends Controller
     public function printBkuPdf()
     {
         $academicYearId = session('academic_year_id');
-        $academicYear = \App\Models\AcademicYear::find($academicYearId);
+        $academicYear = $academicYearId ? \App\Models\AcademicYear::find($academicYearId) : null;
         
-        $payments = \App\Models\Payment::with(['student', 'user'])->get();
-            
-        $expenses = \App\Models\Expense::with(['category', 'user'])->get();
+        if (!$academicYear) {
+            $academicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+        }
+
+        // Determine date range based on academic year name
+        $startDate = null;
+        $endDate = null;
+        if ($academicYear) {
+            preg_match_all('/\d{4}/', $academicYear->name, $matches);
+            if (count($matches[0]) >= 2) {
+                $startYear = intval($matches[0][0]);
+                $endYear = intval($matches[0][1]);
+                
+                if (str_contains(strtolower($academicYear->name), 'ganjil')) {
+                    $startDate = "{$startYear}-07-01";
+                    $endDate = "{$startYear}-12-31";
+                } elseif (str_contains(strtolower($academicYear->name), 'genap')) {
+                    $startDate = "{$endYear}-01-01";
+                    $endDate = "{$endYear}-06-30";
+                } else {
+                    $startDate = "{$startYear}-07-01";
+                    $endDate = "{$endYear}-06-30";
+                }
+            }
+        }
+        
+        $paymentsQuery = \App\Models\Payment::with(['student', 'user']);
+        $expensesQuery = \App\Models\Expense::with(['category', 'user']);
+
+        if ($startDate && $endDate) {
+            $paymentsQuery->whereBetween('date', [$startDate, $endDate]);
+            $expensesQuery->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        $payments = $paymentsQuery->get();
+        $expenses = $expensesQuery->get();
             
         $transactions = collect();
         
@@ -261,8 +294,8 @@ class ReportController extends Controller
         foreach($expenses as $e) {
             $transactions->push((object)[
                 'date' => $e->date,
-                'no_bukti' => 'EXP-' . str_pad($e->id, 4, '0', STR_PAD_LEFT),
-                'keterangan' => 'Pengeluaran: ' . $e->description,
+                'no_bukti' => $e->voucher_number ?? ('EXP-' . str_pad($e->id, 4, '0', STR_PAD_LEFT)),
+                'keterangan' => 'Pengeluaran: ' . ($e->category ? $e->category->name : '') . ($e->note ? ' - ' . $e->note : ''),
                 'debit' => 0,
                 'kredit' => $e->amount,
             ]);
