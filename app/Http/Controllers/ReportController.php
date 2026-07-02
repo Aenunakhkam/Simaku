@@ -246,29 +246,37 @@ class ReportController extends Controller
             $academicYear = \App\Models\AcademicYear::where('is_active', true)->first();
         }
 
-        // Determine date range based on academic year name
+        // Determine date range based on academic year name or query params
         $startDate = null;
         $endDate = null;
-        if ($academicYear) {
-            preg_match_all('/\d{4}/', $academicYear->name, $matches);
-            if (count($matches[0]) >= 2) {
-                $startYear = intval($matches[0][0]);
-                $endYear = intval($matches[0][1]);
-                
-                if (str_contains(strtolower($academicYear->name), 'ganjil')) {
-                    $startDate = "{$startYear}-07-01";
-                    $endDate = "{$startYear}-12-31";
-                } elseif (str_contains(strtolower($academicYear->name), 'genap')) {
-                    $startDate = "{$endYear}-01-01";
-                    $endDate = "{$endYear}-06-30";
-                } else {
-                    $startDate = "{$startYear}-07-01";
-                    $endDate = "{$endYear}-06-30";
+        
+        if (request('all') !== 'true') {
+            if (request('month') && request('year')) {
+                $month = str_pad(request('month'), 2, '0', STR_PAD_LEFT);
+                $year = request('year');
+                $startDate = "{$year}-{$month}-01";
+                $endDate = date('Y-m-t', strtotime($startDate));
+            } elseif ($academicYear) {
+                preg_match_all('/\d{4}/', $academicYear->name, $matches);
+                if (count($matches[0]) >= 2) {
+                    $startYear = intval($matches[0][0]);
+                    $endYear = intval($matches[0][1]);
+                    
+                    if (str_contains(strtolower($academicYear->name), 'ganjil')) {
+                        $startDate = "{$startYear}-07-01";
+                        $endDate = "{$startYear}-12-31";
+                    } elseif (str_contains(strtolower($academicYear->name), 'genap')) {
+                        $startDate = "{$endYear}-01-01";
+                        $endDate = "{$endYear}-06-30";
+                    } else {
+                        $startDate = "{$startYear}-07-01";
+                        $endDate = "{$endYear}-06-30";
+                    }
                 }
             }
         }
         
-        $paymentsQuery = \App\Models\Payment::with(['student', 'user']);
+        $paymentsQuery = \App\Models\Payment::with(['student.classroom.major', 'student.major', 'user']);
         $expensesQuery = \App\Models\Expense::with(['category', 'user']);
 
         if ($startDate && $endDate) {
@@ -282,10 +290,28 @@ class ReportController extends Controller
         $transactions = collect();
         
         foreach($payments as $p) {
+            // Get Classroom & Major info
+            $classroom = $p->student ? $p->student->classroom : null;
+            $major = $p->student ? $p->student->major : null;
+            if (!$major && $classroom) {
+                $major = $classroom->major;
+            }
+            $kelasJurusan = '';
+            if ($classroom) {
+                $kelasJurusan .= $classroom->level . ' ' . $classroom->name;
+            }
+            if ($major) {
+                $kelasJurusan .= ($kelasJurusan ? ' / ' : '') . $major->code;
+            }
+            if (empty($kelasJurusan)) {
+                $kelasJurusan = '-';
+            }
+
             $transactions->push((object)[
                 'date' => $p->date,
                 'no_bukti' => $p->invoice_number,
                 'keterangan' => 'Penerimaan Tagihan - ' . ($p->student ? $p->student->name : ''),
+                'kelas_jurusan' => $kelasJurusan,
                 'debit' => $p->total_amount,
                 'kredit' => 0,
             ]);
@@ -296,6 +322,7 @@ class ReportController extends Controller
                 'date' => $e->date,
                 'no_bukti' => $e->voucher_number ?? ('EXP-' . str_pad($e->id, 4, '0', STR_PAD_LEFT)),
                 'keterangan' => 'Pengeluaran: ' . ($e->category ? $e->category->name : '') . ($e->note ? ' - ' . $e->note : ''),
+                'kelas_jurusan' => '-',
                 'debit' => 0,
                 'kredit' => $e->amount,
             ]);
@@ -306,6 +333,15 @@ class ReportController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.bku_report', compact('transactions', 'academicYear'))
             ->setPaper('a4', 'landscape');
         
-        return $pdf->stream("Buku_Kas_Umum_" . str_replace('/', '_', $academicYear ? $academicYear->name : 'All') . ".pdf");
+        $pdfName = "Buku_Kas_Umum_";
+        if (request('all') === 'true') {
+            $pdfName .= "Semua_Tahun";
+        } elseif (request('month') && request('year')) {
+            $pdfName .= request('year') . "_" . str_pad(request('month'), 2, '0', STR_PAD_LEFT);
+        } else {
+            $pdfName .= str_replace('/', '_', $academicYear ? $academicYear->name : 'All');
+        }
+
+        return $pdf->stream($pdfName . ".pdf");
     }
 }

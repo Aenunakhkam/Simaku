@@ -52,11 +52,12 @@
             <tr>
                 <th width="5%">No</th>
                 <th width="10%">Tanggal</th>
-                <th width="15%">No. Bukti</th>
-                <th width="35%">Uraian / Keterangan</th>
-                <th width="12%">Penerimaan (Debit)</th>
-                <th width="12%">Pengeluaran (Kredit)</th>
-                <th width="11%">Saldo</th>
+                <th width="12%">No. Bukti</th>
+                <th width="28%">Uraian / Keterangan</th>
+                <th width="15%">Kelas/Jurusan</th>
+                <th width="10%">Penerimaan (Debit)</th>
+                <th width="10%">Pengeluaran (Kredit)</th>
+                <th width="10%">Saldo</th>
             </tr>
         </thead>
         <tbody>
@@ -79,19 +80,20 @@
                     <td class="text-center">{{ date('d/m/Y', strtotime($tx->date)) }}</td>
                     <td>{{ $tx->no_bukti }}</td>
                     <td>{{ $tx->keterangan }}</td>
+                    <td>{{ $tx->kelas_jurusan }}</td>
                     <td class="text-right">{{ $tx->debit > 0 ? number_format($tx->debit, 0, ',', '.') : '-' }}</td>
                     <td class="text-right">{{ $tx->kredit > 0 ? number_format($tx->kredit, 0, ',', '.') : '-' }}</td>
                     <td class="text-right">{{ number_format($saldo, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada transaksi tercatat di tahun ajaran ini.</td>
+                    <td colspan="8" class="text-center">Tidak ada transaksi tercatat di periode ini.</td>
                 </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr style="background-color: #f2f2f2; font-weight: bold;">
-                <td colspan="4" class="text-right">TOTAL KESELURUHAN</td>
+                <td colspan="5" class="text-right">TOTAL KESELURUHAN</td>
                 <td class="text-right">{{ number_format($totalDebit, 0, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($totalKredit, 0, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($saldo, 0, ',', '.') }}</td>
