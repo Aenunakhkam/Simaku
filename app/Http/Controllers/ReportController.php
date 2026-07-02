@@ -237,6 +237,19 @@ class ReportController extends Controller
         return $pdf->download("laporan_keuangan_{$student->name}.pdf");
     }
 
+    public function bkuIndex()
+    {
+        $academicYearId = session('academic_year_id');
+        $academicYear = $academicYearId ? \App\Models\AcademicYear::find($academicYearId) : null;
+        if (!$academicYear) {
+            $academicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+        }
+
+        return Inertia::render('Reports/Bku', [
+            'academicYear' => $academicYear,
+        ]);
+    }
+
     public function printBkuPdf()
     {
         $academicYearId = session('academic_year_id');
