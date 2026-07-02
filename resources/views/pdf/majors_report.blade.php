@@ -117,10 +117,10 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        Rp {{ number_format($s->total_tagihan, 0, ',', '.') }}
+                        Rp {{ number_format($s->total_tagihan_rp, 0, ',', '.') }}
                     </td>
                     <td class="text-right">
-                        Rp {{ number_format($s->total_tagihan - $s->tagihan_dibayar, 0, ',', '.') }}
+                        Rp {{ number_format($s->sisa_tunggakan_rp, 0, ',', '.') }}
                     </td>
                 </tr>
             @empty

@@ -131,7 +131,9 @@ class ReportController extends Controller
             'billings as paid_billings' => function ($query) use ($academicYearId) {
                 $query->where('academic_year_id', $academicYearId)->where('is_paid', true);
             }
-        ]);
+        ])->withSum(['billings as total_nominal' => function ($query) use ($academicYearId) {
+            $query->where('academic_year_id', $academicYearId);
+        }], 'amount');
 
         if ($majorId !== 'all') {
             $studentsQuery->where(function ($q) use ($majorId) {
@@ -148,6 +150,8 @@ class ReportController extends Controller
 
         foreach ($students as $student) {
             $totalPaidAmount = $student->billings->sum('payment_details_sum_amount');
+            $totalNominal = $student->total_nominal ?? 0;
+            $sisaTunggakan = $totalNominal - $totalPaidAmount;
             
             $studentStatus = 'Belum Bayar';
             if ($student->total_billings > 0) {
@@ -187,8 +191,8 @@ class ReportController extends Controller
                 'nisn' => $student->nisn ?? $student->nis ?? '-',
                 'kelas_jurusan' => $kelasJurusan,
                 'status' => $studentStatus,
-                'total_tagihan' => $student->total_billings,
-                'tagihan_dibayar' => $student->paid_billings,
+                'total_tagihan_rp' => $totalNominal,
+                'sisa_tunggakan_rp' => $sisaTunggakan,
             ]);
         }
         
@@ -214,8 +218,8 @@ class ReportController extends Controller
                     $s->nisn,
                     $s->kelas_jurusan,
                     $s->status,
-                    'Rp ' . number_format($s->total_tagihan, 0, ',', '.'),
-                    'Rp ' . number_format($s->total_tagihan - $s->tagihan_dibayar, 0, ',', '.')
+                    'Rp ' . number_format($s->total_tagihan_rp, 0, ',', '.'),
+                    'Rp ' . number_format($s->sisa_tunggakan_rp, 0, ',', '.')
                 ];
             }
             
