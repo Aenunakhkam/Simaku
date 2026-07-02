@@ -110,6 +110,127 @@ class ReportController extends Controller
         ]);
     }
 
+    public function exportMajors(Request $request)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', '300');
+
+        $academicYearId = session('academic_year_id');
+        $academicYear = $academicYearId ? \App\Models\AcademicYear::find($academicYearId) : \App\Models\AcademicYear::where('is_active', true)->first();
+        
+        $majorId = $request->get('major_id', 'all');
+        $status = $request->get('status', 'all');
+        $format = $request->get('format', 'pdf');
+
+        $studentsQuery = \App\Models\Student::with(['classroom.major', 'major', 'billings' => function ($query) use ($academicYearId) {
+            $query->where('academic_year_id', $academicYearId)->withSum('paymentDetails', 'amount');
+        }])->withCount([
+            'billings as total_billings' => function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId);
+            },
+            'billings as paid_billings' => function ($query) use ($academicYearId) {
+                $query->where('academic_year_id', $academicYearId)->where('is_paid', true);
+            }
+        ]);
+
+        if ($majorId !== 'all') {
+            $studentsQuery->where(function ($q) use ($majorId) {
+                $q->where('major_id', $majorId)
+                  ->orWhereHas('classroom', function ($q2) use ($majorId) {
+                      $q2->where('major_id', $majorId);
+                  });
+            });
+        }
+
+        $students = $studentsQuery->get();
+
+        $filteredStudents = collect();
+
+        foreach ($students as $student) {
+            $totalPaidAmount = $student->billings->sum('payment_details_sum_amount');
+            
+            $studentStatus = 'Belum Bayar';
+            if ($student->total_billings > 0) {
+                if ($student->paid_billings == $student->total_billings) {
+                    $studentStatus = 'Lunas';
+                } elseif ($totalPaidAmount > 0) {
+                    $studentStatus = 'Belum Lunas';
+                }
+            }
+
+            // Filter logic
+            if ($status !== 'all') {
+                if ($status === 'lunas' && $studentStatus !== 'Lunas') continue;
+                if ($status === 'belum_lunas' && $studentStatus !== 'Belum Lunas') continue;
+                if ($status === 'belum_bayar' && $studentStatus !== 'Belum Bayar') continue;
+            }
+
+            // Get Kelas/Jurusan
+            $classroom = $student->classroom;
+            $major = $student->major;
+            if (!$major && $classroom) {
+                $major = $classroom->major;
+            }
+            $kelasJurusan = '';
+            if ($classroom) {
+                $kelasJurusan .= $classroom->level . ' ' . $classroom->name;
+            }
+            if ($major) {
+                $kelasJurusan .= ($kelasJurusan ? ' / ' : '') . $major->code;
+            }
+            if (empty($kelasJurusan)) {
+                $kelasJurusan = '-';
+            }
+
+            $filteredStudents->push((object)[
+                'nama' => $student->name,
+                'nisn' => $student->nisn ?? $student->nis ?? '-',
+                'kelas_jurusan' => $kelasJurusan,
+                'status' => $studentStatus,
+                'total_tagihan' => $student->total_billings,
+                'tagihan_dibayar' => $student->paid_billings,
+            ]);
+        }
+        
+        $filteredStudents = $filteredStudents->sortBy('nama')->values();
+
+        $title = "Laporan Pembayaran Siswa";
+        if ($majorId !== 'all') {
+            $majorInfo = \App\Models\Major::find($majorId);
+            if ($majorInfo) {
+                $title .= " - Jurusan " . $majorInfo->code;
+            }
+        }
+
+        if ($format === 'excel') {
+            $excelData = [
+                ['No', 'Nama Siswa', 'NISN/NIS', 'Kelas/Jurusan', 'Status Pembayaran']
+            ];
+            
+            foreach ($filteredStudents as $index => $s) {
+                $excelData[] = [
+                    $index + 1,
+                    $s->nama,
+                    $s->nisn,
+                    $s->kelas_jurusan,
+                    $s->status
+                ];
+            }
+            
+            $xlsx = \Shuchkin\SimpleXLSXGen::fromArray($excelData);
+            return $xlsx->downloadAs(str_replace(' ', '_', $title) . '.xlsx');
+        }
+
+        // Output as PDF
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.majors_report', [
+            'students' => $filteredStudents,
+            'title' => $title,
+            'academicYear' => $academicYear
+        ])->setPaper('a4', 'landscape');
+        
+        return $pdf->stream(str_replace(' ', '_', $title) . ".pdf");
+    }
+
     public function majorDetail($id)
     {
         $major = \App\Models\Major::findOrFail($id);

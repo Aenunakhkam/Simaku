@@ -1,11 +1,22 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     majors: Array,
 });
+
+const selectedMajor = ref('all');
+const selectedStatus = ref('all');
+
+const getExportUrl = (format) => {
+    return route('reports.majors.export', {
+        major_id: selectedMajor.value,
+        status: selectedStatus.value,
+        format: format
+    });
+};
 
 const getProgressColor = (percentage) => {
     if (percentage >= 80) return 'bg-green-500';
@@ -35,6 +46,49 @@ const getProgressTextClass = (percentage) => {
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Statistik Tagihan Berdasarkan Jurusan</h3>
                         <p class="text-sm text-gray-500 mt-1">Pilih jurusan di bawah ini untuk melihat detail masing-masing siswa.</p>
+                    </div>
+                </div>
+
+                <!-- Panel Ekspor -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Ekspor Laporan Siswa</h3>
+                            <p class="text-sm text-gray-500">Cetak PDF atau Excel dengan filter jurusan dan status pembayaran.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Filter Jurusan</label>
+                            <select v-model="selectedMajor" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="all">Semua Jurusan</option>
+                                <option v-for="m in majors" :key="m.id" :value="m.id">{{ m.code }} - {{ m.name }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Status Pembayaran</label>
+                            <select v-model="selectedStatus" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="all">Semua Status</option>
+                                <option value="lunas">Lunas</option>
+                                <option value="belum_lunas">Belum Lunas (Nyicil)</option>
+                                <option value="belum_bayar">Belum Bayar</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 justify-end border-t border-gray-50 pt-4">
+                        <a :href="getExportUrl('excel')" target="_blank" class="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Unduh Excel
+                        </a>
+                        <a :href="getExportUrl('pdf')" target="_blank" class="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Cetak PDF
+                        </a>
                     </div>
                 </div>
 

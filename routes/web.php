@@ -91,6 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/classrooms', [\App\Http\Controllers\ReportController::class, 'classrooms'])->name('reports.classrooms');
     Route::get('/reports/classrooms/{id}', [\App\Http\Controllers\ReportController::class, 'classroomDetail'])->name('reports.classroom.detail');
     Route::get('/reports/majors', [\App\Http\Controllers\ReportController::class, 'majors'])->name('reports.majors');
+    Route::get('/reports/majors/export', [\App\Http\Controllers\ReportController::class, 'exportMajors'])->name('reports.majors.export');
     Route::get('/reports/majors/{id}', [\App\Http\Controllers\ReportController::class, 'majorDetail'])->name('reports.major.detail');
     Route::get('/reports/classrooms/{id}/pdf', [\App\Http\Controllers\ReportController::class, 'printClassroomPdf'])->name('reports.classroom.pdf');
     Route::get('/reports/students/{id}/pdf', [\App\Http\Controllers\ReportController::class, 'printStudentPdf'])->name('reports.student.pdf');
