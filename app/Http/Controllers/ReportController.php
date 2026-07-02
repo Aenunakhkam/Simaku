@@ -252,6 +252,10 @@ class ReportController extends Controller
 
     public function printBkuPdf()
     {
+        // Tingkatkan memory limit dan max execution time karena DomPDF butuh resource sangat besar untuk Semua Periode
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', '300');
+
         $academicYearId = session('academic_year_id');
         $academicYear = $academicYearId ? \App\Models\AcademicYear::find($academicYearId) : null;
         
